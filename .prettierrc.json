@@ -1,0 +1,12 @@
+{
+    "arrowParens": "always",
+    "endOfLine": "lf",
+    "plugins": ["prettier-plugin-organize-imports"],
+    "printWidth": 120,
+    "quoteProps": "consistent",
+    "semi": true,
+    "singleQuote": true,
+    "tabWidth": 4,
+    "trailingComma": "es5",
+    "useTabs": false
+}
