@@ -1,5 +1,7 @@
 const { resolve } = require('path');
 const nodeExternals = require('webpack-node-externals');
+const GeneratePackageJsonPlugin = require('generate-package-json-webpack-plugin');
+const packageJson = require('./package.json');
 
 /** @type {import('webpack').Configuration} */
 const webpackConfig = {
@@ -21,6 +23,7 @@ const webpackConfig = {
         path: resolve(__dirname, 'dist', 'dma-as'),
         filename: 'main.js',
     },
+    plugins: [new GeneratePackageJsonPlugin(packageJson)],
     watch: process.env['NODE_ENV'] === 'development',
 };
 
