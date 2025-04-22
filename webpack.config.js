@@ -1,4 +1,5 @@
 const { resolve } = require('path');
+const nodeExternals = require('webpack-node-externals');
 
 /** @type {import('webpack').Configuration} */
 const webpackConfig = {
@@ -6,6 +7,7 @@ const webpackConfig = {
     externalsPresets: {
         node: true,
     },
+    externals: [nodeExternals()],
     mode: process.env['NODE_ENV'] === 'production' ? 'production' : 'development',
     node: {
         __dirname: false,
