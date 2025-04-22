@@ -9,4 +9,4 @@ on:
 jobs:
     execute:
         name: Execute
-        uses: dnd-mapp/actions/.github/workflow/build.yml@main
+        uses: dnd-mapp/actions/.github/workflows/build.yml@main
