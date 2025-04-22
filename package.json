@@ -9,9 +9,9 @@
     },
     "scripts": {
         "build": "npx nest build",
-        "build-dev": "npx nest build",
+        "build-dev": "npx nest build -w",
         "docker-build": "docker build -f .docker/Dockerfile -t dnd-mapp/dma-as .",
-        "start": "npx nest start",
+        "start": "npx nest start -w",
         "test": "npx jest",
         "test-dev": "npx jest --watch",
         "lint": "npx eslint \"src/**/*.ts\"",

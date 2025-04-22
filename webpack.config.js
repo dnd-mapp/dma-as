@@ -24,7 +24,6 @@ const webpackConfig = {
         filename: 'main.js',
     },
     plugins: [new GeneratePackageJsonPlugin(packageJson)],
-    watch: process.env['NODE_ENV'] === 'development',
 };
 
 module.exports = webpackConfig;
