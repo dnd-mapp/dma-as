@@ -64,7 +64,7 @@ Ensure that you have the following requirements prepared:
     - If you've not done so already, install mkcert in the root CA like so:
 
       ```bash
-      mkcert install
+      mkcert -install
       ```
       A browser restart is required if you've done this step, and you've got a browser open.
 
