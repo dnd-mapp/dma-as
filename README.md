@@ -64,7 +64,7 @@ Ensure that you have the following requirements prepared:
     - If you've not done so already, install mkcert in the root CA like so:
 
       ```bash
-      mkcert install
+      mkcert -install
       ```
       A browser restart is required if you've done this step, and you've got a browser open.
 
@@ -74,7 +74,7 @@ Ensure that you have the following requirements prepared:
       mkcert -cert-file certificate.pem -key-file certificate-key.pem localhost.auth.dndmapp.net localhost
       ```
 
-5. Add the `localhost.dndmapp.net` host name to the hosts file on your machine.
+5. Add the `localhost.auth.dndmapp.net` host name to the hosts file on your machine.
 
    #### For Mac / Linux
 
@@ -89,7 +89,7 @@ Ensure that you have the following requirements prepared:
     - Add the following line at the end of the file:
 
       ```
-      127.0.0.1 localhost.dndmapp.net
+      127.0.0.1 localhost.auth.dndmapp.net
       ```
 
     - Save the file by pressing `Ctrl + O` and close the editor with `CTRL + X`.
@@ -108,7 +108,7 @@ Ensure that you have the following requirements prepared:
     - Add the following line at the end of the file:
 
       ```
-      127.0.0.1 localhost.dndmapp.net
+      127.0.0.1 localhost.auth.dndmapp.net
       ```
 
     - Save the file by pressing `Ctrl + S` after which you may close Notepad.
