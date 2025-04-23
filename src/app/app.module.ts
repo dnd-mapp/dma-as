@@ -3,12 +3,11 @@ import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { configOptions } from './config';
-import { DmaLogger } from './logging';
+import { LoggingModule } from './logging';
 
 @Module({
     imports: [ConfigModule.forRoot(configOptions)],
     controllers: [AppController],
-    providers: [AppService, DmaLogger],
-    exports: [DmaLogger],
+    providers: [AppService],
 })
 export class AppModule {}
