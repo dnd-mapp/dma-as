@@ -26,8 +26,6 @@ WORKDIR /app
 
 COPY --from=build /app/dist/dma-as .
 
-EXPOSE 3000
-
 LABEL org.opencontainers.image.source=https://github.com/dnd-mapp/dma-as
 LABEL org.opencontainers.image.description="Image containing the DnD-Mapp Authentication Server"
 LABEL org.opencontainers.image.licenses=AGPL-3.0-only
