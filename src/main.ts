@@ -1,8 +1,9 @@
+import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
 import { readFile } from 'fs/promises';
-import { AppModule, SSLConfig } from './app';
+import { AppModule, globalValidationOptions, SSLConfig } from './app';
 import { DmaLogger } from './app/logging';
 
 async function bootstrap() {
@@ -38,6 +39,7 @@ async function bootstrap() {
         bufferLogs: true,
     });
     const logger = app.get(DmaLogger);
+    app.useGlobalPipes(new ValidationPipe(globalValidationOptions));
 
     app.useLogger(logger);
 
