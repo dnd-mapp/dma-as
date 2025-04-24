@@ -21,7 +21,7 @@ export class UsersRepository {
     public create = async (data: CreateUserData) =>
         plainToInstance(User, await this.databaseService.users.create({ data: data }));
 
-    public async removeByI(userId: string) {
+    public async removeById(userId: string) {
         await this.databaseService.users.delete({ where: { id: userId } });
     }
 }
