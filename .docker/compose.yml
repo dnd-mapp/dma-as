@@ -3,5 +3,7 @@ services:
         container_name: authentication-server
         image: dnd-mapp/dma-as:latest
         restart: on-failure
+        env_file:
+            - .env
         ports:
             - '3000:3000/tcp'
