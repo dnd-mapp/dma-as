@@ -39,9 +39,11 @@ async function bootstrap() {
         bufferLogs: true,
     });
     const logger = app.get(DmaLogger);
+    app.useLogger(logger);
+
     app.useGlobalPipes(new ValidationPipe(globalValidationOptions));
 
-    app.useLogger(logger);
+    app.enableShutdownHooks();
 
     await app.listen(port, host);
     logger.log(
