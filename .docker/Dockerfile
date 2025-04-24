@@ -6,18 +6,17 @@ COPY package*.json .
 
 RUN npm ci
 
-RUN npx prisma generate
-
 COPY . .
 
 RUN npm run build
 
 ENV NODE_ENV=production
 
-RUN mv node_modules/.prisma prisma-client/ && \
+RUN rm -rf node_modules && \
+    mv prisma dist/dma-as/prisma/ && \
     cd dist/dma-as && \
     npm i && \
-    mv ../../prisma-client node_modules/.prisma/
+    npx prisma generate
 
 
 FROM node:22.14-alpine3.21
