@@ -10,6 +10,7 @@ import {
 } from '@nestjs/common';
 import { FastifyReply } from 'fastify';
 import { DmaLogger } from '../logging';
+import { valueToBase64 } from '../utils';
 import { AuthenticationService } from './authentication.service';
 import { LoginData, SignUpData } from './models';
 
@@ -25,9 +26,15 @@ export class AuthenticationController {
 
     @Post('/login')
     @HttpCode(HttpStatus.OK)
-    public async login(@Body() loginData: LoginData) {
+    public async login(@Body() loginData: LoginData, @Res({ passthrough: true }) response: FastifyReply) {
         this.logger.log(`Login attempt initiated for username "${loginData.username}"`);
-        return await this.authenticationService.login(loginData);
+
+        const authenticatedUser = await this.authenticationService.login(loginData);
+        const { username, password } = loginData;
+
+        // TODO - Replace with a generated JWT token and cookies instead of base64 encoded username and password.
+        response.headers({ Authorization: `Basic ${valueToBase64(`${username}:${password}`)}` });
+        return authenticatedUser;
     }
 
     @Post('/sign-up')

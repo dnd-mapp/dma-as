@@ -4,19 +4,25 @@ import {
     ClassSerializerInterceptor,
     Controller,
     Delete,
+    ForbiddenException,
     Get,
     NotFoundException,
     Param,
     Post,
     Put,
+    Req,
+    UseGuards,
     UseInterceptors,
 } from '@nestjs/common';
+import { FastifyRequest } from 'fastify';
+import { AuthenticationGuard } from '../authentication';
 import { DmaLogger } from '../logging';
-import { CreateUserData, UpdateUserData } from './models';
+import { CreateUserData, UpdateUserData, User } from './models';
 import { UsersService } from './users.service';
 
-@Controller('users')
+@UseGuards(AuthenticationGuard)
 @UseInterceptors(ClassSerializerInterceptor)
+@Controller('users')
 export class UsersController {
     constructor(
         private readonly usersService: UsersService,
@@ -37,7 +43,7 @@ export class UsersController {
         return await this.usersService.create(userData);
     }
 
-    @Get(':id')
+    @Get('/:id')
     public async getById(@Param('id') userIdParam: string) {
         this.logger.log(`Getting user with ID "${userIdParam}"`);
         const query = await this.usersService.getById(userIdParam);
@@ -46,8 +52,13 @@ export class UsersController {
         return query;
     }
 
-    @Put(':id')
-    public async update(@Param('id') userIdParam: string, @Body() userData: UpdateUserData) {
+    @Put('/:id')
+    public async update(
+        @Param('id') userIdParam: string,
+        @Body() userData: UpdateUserData,
+        @Req() request: FastifyRequest
+    ) {
+        this.validateResourceOwner(userIdParam, request.raw.authenticatedUser);
         this.logger.log(`Update user with ID "${userIdParam}"`);
 
         if (userIdParam !== userData.id) {
@@ -58,9 +69,17 @@ export class UsersController {
         return await this.usersService.update(userData);
     }
 
-    @Delete(':id')
-    public async removeById(@Param('id') userIdParam: string) {
+    @Delete('/:id')
+    public async removeById(@Param('id') userIdParam: string, @Req() request: FastifyRequest) {
+        this.validateResourceOwner(userIdParam, request.raw.authenticatedUser);
         this.logger.log(`Remove user with ID "${userIdParam}"`);
+
         await this.usersService.removeById(userIdParam);
+    }
+
+    private validateResourceOwner(userId: string, authenticatedUser: User) {
+        if (userId === authenticatedUser.id) return;
+        this.logger.warn(`Unauthorized access attempt detected by User with ID "${authenticatedUser.id}"`);
+        throw new ForbiddenException('You are not authorized to perform this action');
     }
 }
