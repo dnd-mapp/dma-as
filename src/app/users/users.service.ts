@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { genSalt, hash } from 'bcryptjs';
 import { DmaLogger } from '../logging';
 import { CreateUserData, UpdateUserData } from './models';
+import { hashPassword } from '../utils';
 import { UsersRepository } from './users.repository';
 
 @Injectable()
@@ -52,7 +52,7 @@ export class UsersService {
                 userData.username,
                 `Can't create User. Username "${userData.username}" cannot be used.`
             );
-            userData.password = await this.hashPassword(userData.password);
+            userData.password = await hashPassword(userData.password);
 
             return await this.usersRepository.create(userData);
         } catch (error) {
@@ -91,9 +91,5 @@ export class UsersService {
             // about existing User accounts we throw a BadRequestException instead.
             throw new BadRequestException(errorMessage);
         }
-    }
-
-    private async hashPassword(password: string) {
-        return await hash(password, await genSalt(16));
     }
 }
