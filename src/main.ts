@@ -7,9 +7,7 @@ import { AppModule, globalValidationOptions, SSLConfig } from './app';
 import { DmaLogger } from './app/logging';
 
 async function bootstrap() {
-    const appContext = await NestFactory.createApplicationContext(AppModule, {
-        logger: false,
-    });
+    const appContext = await NestFactory.createApplicationContext(AppModule, { logger: false });
     const configService = appContext.get(ConfigService);
 
     const ssl = configService.get<SSLConfig | null>('ssl');
@@ -38,7 +36,9 @@ async function bootstrap() {
     const app = await NestFactory.create<NestFastifyApplication>(AppModule, fastifyAdapter, {
         bufferLogs: true,
     });
-    const logger = app.get(DmaLogger);
+    const logger = await app.resolve(DmaLogger);
+    logger.setContext('NestApplication');
+
     app.useLogger(logger);
 
     app.useGlobalPipes(new ValidationPipe(globalValidationOptions));
@@ -47,8 +47,7 @@ async function bootstrap() {
 
     await app.listen(port, host);
     logger.log(
-        `Server started on address: "http${ssl ? 's' : ''}://${host === '0.0.0.0' ? 'localhost' : host}:${port}"`,
-        'NestApplication'
+        `Server started on address: "http${ssl ? 's' : ''}://${host === '0.0.0.0' ? 'localhost' : host}:${port}"`
     );
 }
 
