@@ -15,6 +15,7 @@ datasource db {
 model Users {
     id       String @id() @default(nanoid())
     username String @unique(map: "uq_user_username")
+    password String
 
     @@map(name: "users")
 }
