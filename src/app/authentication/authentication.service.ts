@@ -1,8 +1,9 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { compare } from 'bcryptjs';
 import { DmaLogger } from '../logging';
-import { UsersService } from '../users';
-import { LoginData, SignUpData } from './models';
+import { User, UsersService } from '../users';
+import { hashPassword } from '../utils';
+import { ChangePasswordData, LoginData, SignUpData } from './models';
 
 @Injectable()
 export class AuthenticationService {
@@ -39,6 +40,17 @@ export class AuthenticationService {
         this.logger.log(`User account created successfully for username "${createdUser.username}"`);
 
         return createdUser;
+    }
+
+    public async changePassword(data: ChangePasswordData, user: User) {
+        if (!(await this.comparePassword(data.oldPassword, user.password))) {
+            this.logger.warn(`Change password failed for User with ID "${user.id}" - Reason: Incorrect old password`);
+            throw new BadRequestException('Old password is incorrect');
+        }
+        user.password = await hashPassword(data.newPassword);
+        await this.usersService.updatePassword(user);
+
+        this.logger.log(`Change password successfully for User with ID "${user.id}"`);
     }
 
     private async comparePassword(password: string, hash: string) {

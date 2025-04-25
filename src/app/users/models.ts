@@ -21,3 +21,5 @@ export class User {
 export class CreateUserData extends OmitType(User, ['id'] as const) {}
 
 export class UpdateUserData extends OmitType(User, ['password'] as const) {}
+
+export class UpdateUserPasswordData extends OmitType(User, ['username'] as const) {}

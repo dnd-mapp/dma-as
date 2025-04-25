@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty, IsString, MinLength } from 'class-validator';
 
 export class LoginData {
     @IsString()
@@ -18,4 +18,15 @@ export class SignUpData {
     @IsString()
     @IsNotEmpty()
     public password: string;
+}
+
+export class ChangePasswordData {
+    @IsString()
+    @IsNotEmpty()
+    public oldPassword: string;
+
+    @IsString()
+    @IsNotEmpty()
+    @MinLength(12)
+    public newPassword: string;
 }

@@ -5,14 +5,17 @@ import {
     HttpCode,
     HttpStatus,
     Post,
+    Req,
     Res,
     UseInterceptors,
 } from '@nestjs/common';
-import { FastifyReply } from 'fastify';
+import { plainToInstance } from 'class-transformer';
+import { FastifyReply, FastifyRequest } from 'fastify';
 import { DmaLogger } from '../logging';
+import { User } from '../users';
 import { valueToBase64 } from '../utils';
 import { AuthenticationService } from './authentication.service';
-import { LoginData, SignUpData } from './models';
+import { ChangePasswordData, LoginData, SignUpData } from './models';
 
 @Controller('/auth')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -47,5 +50,13 @@ export class AuthenticationController {
         });
 
         return responseData;
+    }
+
+    @Post('/change-password')
+    public async changePassword(@Body() data: ChangePasswordData, @Req() request: FastifyRequest) {
+        const user = plainToInstance(User, request.raw.authenticatedUser);
+
+        this.logger.log(`Change password initiated for username "${user.username}"`);
+        await this.authenticationService.changePassword(data, user);
     }
 }

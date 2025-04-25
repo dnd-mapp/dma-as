@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { DmaLogger } from '../logging';
-import { CreateUserData, UpdateUserData } from './models';
 import { hashPassword } from '../utils';
+import { CreateUserData, UpdateUserData, User } from './models';
 import { UsersRepository } from './users.repository';
 
 @Injectable()
@@ -44,6 +44,10 @@ export class UsersService {
             }
             throw error;
         }
+    }
+
+    public async updatePassword(user: User) {
+        return await this.usersRepository.update(user);
     }
 
     public async create(userData: CreateUserData) {
