@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { AuthenticationModule } from './authentication';
 import { configOptions, provideThrottlerGuard, throttlerOptions } from './config';
 import { DatabaseModule } from './database';
 import { LoggingModule } from './logging';
@@ -15,6 +16,7 @@ import { UsersModule } from './users';
         DatabaseModule,
         UsersModule,
         LoggingModule,
+        AuthenticationModule,
     ],
     controllers: [AppController],
     providers: [AppService, provideThrottlerGuard()],
