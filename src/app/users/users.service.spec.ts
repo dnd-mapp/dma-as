@@ -1,13 +1,11 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { DatabaseModule } from '../database';
-import { LoggingModule } from '../logging';
-import { UsersModule } from './users.module';
+import { Test } from '@nestjs/testing';
+import { AppModule } from '../app.module';
 import { UsersService } from './users.service';
 
 describe('UsersService', () => {
     async function setupTest() {
-        const module: TestingModule = await Test.createTestingModule({
-            imports: [UsersModule, DatabaseModule, LoggingModule],
+        const module = await Test.createTestingModule({
+            imports: [AppModule],
         }).compile();
 
         return {
