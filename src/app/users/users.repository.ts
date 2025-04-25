@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
 import { DatabaseService } from '../database';
-import { CreateUserData, User } from './models';
+import { CreateUserData, UpdateUserData, User } from './models';
 
 @Injectable()
 export class UsersRepository {
@@ -15,7 +15,7 @@ export class UsersRepository {
     public findOneByUsername = async (username: string) =>
         plainToInstance(User, await this.databaseService.users.findFirst({ where: { username: username } }));
 
-    public update = async (data: User) =>
+    public update = async (data: UpdateUserData) =>
         plainToInstance(User, await this.databaseService.users.update({ where: { id: data.id }, data: data }));
 
     public create = async (data: CreateUserData) =>

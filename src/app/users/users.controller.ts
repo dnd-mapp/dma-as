@@ -1,9 +1,22 @@
-import { BadRequestException, Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
+import {
+    BadRequestException,
+    Body,
+    ClassSerializerInterceptor,
+    Controller,
+    Delete,
+    Get,
+    NotFoundException,
+    Param,
+    Post,
+    Put,
+    UseInterceptors,
+} from '@nestjs/common';
 import { DmaLogger } from '../logging';
-import { CreateUserData, User } from './models';
+import { CreateUserData, UpdateUserData } from './models';
 import { UsersService } from './users.service';
 
 @Controller('users')
+@UseInterceptors(ClassSerializerInterceptor)
 export class UsersController {
     constructor(
         private readonly usersService: UsersService,
@@ -20,18 +33,21 @@ export class UsersController {
 
     @Post()
     public async create(@Body() userData: CreateUserData) {
-        this.logger.log('Creating a new user', userData);
+        this.logger.log('Creating a new user');
         return await this.usersService.create(userData);
     }
 
     @Get(':id')
     public async getById(@Param('id') userIdParam: string) {
         this.logger.log(`Getting user with ID "${userIdParam}"`);
-        return await this.usersService.getById(userIdParam);
+        const query = await this.usersService.getById(userIdParam);
+
+        if (!query) throw new NotFoundException(`User with ID "${userIdParam}" was not found`);
+        return query;
     }
 
     @Put(':id')
-    public async update(@Param('id') userIdParam: string, @Body() userData: User) {
+    public async update(@Param('id') userIdParam: string, @Body() userData: UpdateUserData) {
         this.logger.log(`Update user with ID "${userIdParam}"`);
 
         if (userIdParam !== userData.id) {
@@ -43,7 +59,7 @@ export class UsersController {
     }
 
     @Delete(':id')
-    public async removeByid(@Param('id') userIdParam: string) {
+    public async removeById(@Param('id') userIdParam: string) {
         this.logger.log(`Remove user with ID "${userIdParam}"`);
         await this.usersService.removeById(userIdParam);
     }
