@@ -27,6 +27,18 @@ export class AuthenticationController {
         this.logger.setContext('AuthenticationController');
     }
 
+    @Post('/sign-up')
+    public async signUp(@Body() signUpData: SignUpData, @Res({ passthrough: true }) response: FastifyReply) {
+        this.logger.log(`User registration initiated for username "${signUpData.username}"`);
+        const responseData = await this.authenticationService.signUp(signUpData);
+
+        response.headers({
+            Location: `${response.request.url.replace('/auth/sign-up', `/users/${responseData.id}`)}`,
+        });
+
+        return responseData;
+    }
+
     @Post('/login')
     @HttpCode(HttpStatus.OK)
     public async login(@Body() loginData: LoginData, @Res({ passthrough: true }) response: FastifyReply) {
@@ -38,18 +50,6 @@ export class AuthenticationController {
         // TODO - Replace with a generated JWT token and cookies instead of base64 encoded username and password.
         response.headers({ Authorization: `Basic ${valueToBase64(`${username}:${password}`)}` });
         return authenticatedUser;
-    }
-
-    @Post('/sign-up')
-    public async signUp(@Body() signUpData: SignUpData, @Res({ passthrough: true }) response: FastifyReply) {
-        this.logger.log(`User registration initiated for username "${signUpData.username}"`);
-        const responseData = await this.authenticationService.signUp(signUpData);
-
-        response.headers({
-            Location: `${response.request.url.replace('/auth/sign-up', `/users/${responseData.id}`)}`,
-        });
-
-        return responseData;
     }
 
     @Post('/change-password')
