@@ -53,6 +53,7 @@ export class AuthenticationController {
     }
 
     @Post('/change-password')
+    @HttpCode(HttpStatus.OK)
     public async changePassword(@Body() data: ChangePasswordData, @Req() request: FastifyRequest) {
         const user = plainToInstance(User, request.raw.authenticatedUser);
 
