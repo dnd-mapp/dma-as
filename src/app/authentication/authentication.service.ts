@@ -2,8 +2,10 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { compare } from 'bcryptjs';
 import { DmaLogger } from '../logging';
 import { hashPassword } from '../utils';
-import { ChangePasswordData, LoginData, SignUpData } from './models';
 import {
+    ChangePasswordData,
+    LoginData,
+    SignUpData,
     User,
 } from '../shared';
 import { UsersService } from '../users';

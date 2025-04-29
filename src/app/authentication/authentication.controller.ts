@@ -13,8 +13,12 @@ import { plainToInstance } from 'class-transformer';
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { DmaLogger } from '../logging';
 import { valueToBase64 } from '../utils';
+import {
+    LoginData,
+    SignUpData,
+    TokenRequestData,
+} from '../shared';
 import { AuthenticationService } from './authentication.service';
-import { ChangePasswordData, LoginData, SignUpData } from './models';
 
 @Controller('/auth')
 @UseInterceptors(ClassSerializerInterceptor)
