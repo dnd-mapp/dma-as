@@ -7,17 +7,24 @@ import {
     Post,
     Req,
     Res,
+    UseGuards,
     UseInterceptors,
 } from '@nestjs/common';
-import { plainToInstance } from 'class-transformer';
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { DmaLogger } from '../logging';
-import { User } from '../users';
-import { valueToBase64 } from '../utils';
+import {
+    AuthorizeRequest,
+    ChangePasswordData,
+    COOKIE_NAME_ACCESS_TOKEN,
+    COOKIE_NAME_REFRESH_TOKEN,
+    LoginData,
+    SignUpData,
+    TokenRequestData,
+} from '../shared';
+import { AuthenticationGuard } from './authentication.guard';
 import { AuthenticationService } from './authentication.service';
-import { ChangePasswordData, LoginData, SignUpData } from './models';
 
-@Controller('/auth')
+@Controller()
 @UseInterceptors(ClassSerializerInterceptor)
 export class AuthenticationController {
     constructor(
@@ -25,19 +32,6 @@ export class AuthenticationController {
         private readonly logger: DmaLogger
     ) {
         this.logger.setContext('AuthenticationController');
-    }
-
-    @Post('/login')
-    @HttpCode(HttpStatus.OK)
-    public async login(@Body() loginData: LoginData, @Res({ passthrough: true }) response: FastifyReply) {
-        this.logger.log(`Login attempt initiated for username "${loginData.username}"`);
-
-        const authenticatedUser = await this.authenticationService.login(loginData);
-        const { username, password } = loginData;
-
-        // TODO - Replace with a generated JWT token and cookies instead of base64 encoded username and password.
-        response.headers({ Authorization: `Basic ${valueToBase64(`${username}:${password}`)}` });
-        return authenticatedUser;
     }
 
     @Post('/sign-up')
@@ -52,11 +46,47 @@ export class AuthenticationController {
         return responseData;
     }
 
-    @Post('/change-password')
-    public async changePassword(@Body() data: ChangePasswordData, @Req() request: FastifyRequest) {
-        const user = plainToInstance(User, request.raw.authenticatedUser);
+    @Post('/authorize')
+    public async authorize(@Body() data: AuthorizeRequest, @Res() response: FastifyReply) {
+        this.logger.log('Authorize attempt initialized');
+        await this.authenticationService.authorize(data);
 
-        this.logger.log(`Change password initiated for username "${user.username}"`);
-        await this.authenticationService.changePassword(data, user);
+        this.logger.log('Authorize data stored. Redirecting to Login Page');
+        response.status(HttpStatus.FOUND).redirect(`https://localhost.auth.dndmapp.net/app/login?state=${data.state}`);
+    }
+
+    @Post('/login')
+    public async login(@Body() data: LoginData, @Res() response: FastifyReply) {
+        this.logger.log(`Login attempt initiated for username "${data.username}"`);
+
+        const { redirectUrl, authorizationCode } = await this.authenticationService.login(data);
+
+        response
+            .status(HttpStatus.FOUND)
+            .redirect(`${redirectUrl}?authorizationCode=${authorizationCode}&state=${data.state}`);
+    }
+
+    @Post('/token')
+    public async token(@Body() data: TokenRequestData, @Res({ passthrough: true }) response: FastifyReply) {
+        const { accessToken, refreshToken } = await this.authenticationService.requestToken(data);
+
+        response
+            .status(HttpStatus.OK)
+            .setCookie(COOKIE_NAME_ACCESS_TOKEN, accessToken.token, {
+                expires: accessToken.expirationTime,
+                path: '/',
+            })
+            .setCookie(COOKIE_NAME_REFRESH_TOKEN, refreshToken.token, {
+                expires: refreshToken.expirationTime,
+                path: '/',
+            });
+    }
+
+    @Post('/change-password')
+    @HttpCode(HttpStatus.OK)
+    @UseGuards(AuthenticationGuard)
+    public async changePassword(@Body() data: ChangePasswordData, @Req() request: FastifyRequest) {
+        this.logger.log(`Change password initiated for username "${request.authenticatedUser.username}"`);
+        await this.authenticationService.changePassword(data, request.authenticatedUser);
     }
 }

@@ -1,3 +1,4 @@
+import fastifyCookie, { FastifyCookieOptions } from '@fastify/cookie';
 import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
@@ -31,6 +32,17 @@ async function bootstrap() {
     const host = configService.get<string>('host');
     const port = configService.get<number>('port');
 
+    const cookieOptions: FastifyCookieOptions = {
+        secret: configService.get<string>('cookieSigningSecret'),
+        algorithm: 'sha256',
+        parseOptions: {
+            httpOnly: true,
+            sameSite: 'strict',
+            secure: true,
+            signed: true,
+        },
+    };
+
     await appContext.close();
 
     const app = await NestFactory.create<NestFastifyApplication>(AppModule, fastifyAdapter, {
@@ -39,9 +51,13 @@ async function bootstrap() {
     const logger = await app.resolve(DmaLogger);
     logger.setContext('NestApplication');
 
+    app.setGlobalPrefix('/server');
+
     app.useLogger(logger);
 
     app.useGlobalPipes(new ValidationPipe(globalValidationOptions));
+
+    await app.register(fastifyCookie, cookieOptions);
 
     app.enableShutdownHooks();
 
