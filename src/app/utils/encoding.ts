@@ -1,7 +1,8 @@
 import { genSalt, hash } from 'bcryptjs';
 import { createHash } from 'crypto';
 
-export const valueToBase64 = (plain: string) => Buffer.from(plain).toString('base64url');
+export const valueToBase64 = (value: string | Buffer<ArrayBufferLike>) =>
+    (typeof value === 'string' ? Buffer.from(value) : value).toString('base64url');
 
 export const base64ToValue = (encoded: string) => Buffer.from(encoded, 'base64url').toString('utf8');
 
