@@ -17,5 +17,45 @@ model User {
     username String @unique(map: "uq_user_username")
     password String
 
+    authorizations Authorization[]
+    tokens         Token[]
+
     @@map(name: "users")
+}
+
+model Authorization {
+    authorizationCode String   @id() @default(nanoid()) @map(name: "authorization_code")
+    codeChallenge     String   @map(name: "code_challenge")
+    state             String
+    redirectUrl       String   @map(name: "redirect_url")
+    userId            String?
+    createdAt         DateTime @updatedAt() @map(name: "created_at")
+
+    user User? @relation(fields: [userId], references: [id], map: "fk_user_authorization")
+
+    @@map(name: "authorizations")
+}
+
+enum TokenType {
+    ACCESS
+    REFRESH
+}
+
+model Token {
+    jti String    @id() @default(nanoid())
+    pti String?
+    sub String
+    iat DateTime
+    exp DateTime
+    nbf DateTime?
+    aud String
+    iss String
+    rvk Boolean
+    tpe TokenType
+
+    parentToken Token?  @relation(name: "parentToken", fields: [pti], references: [jti], map: "fk_token_parent_token")
+    childTokens Token[] @relation(name: "parentToken")
+    user        User    @relation(fields: [sub], references: [id], map: "fk_user_token")
+
+    @@map(name: "tokens")
 }
