@@ -51,6 +51,8 @@ async function bootstrap() {
     const logger = await app.resolve(DmaLogger);
     logger.setContext('NestApplication');
 
+    app.setGlobalPrefix('/server');
+
     app.useLogger(logger);
 
     app.useGlobalPipes(new ValidationPipe(globalValidationOptions));

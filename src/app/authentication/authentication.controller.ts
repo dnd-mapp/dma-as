@@ -20,7 +20,7 @@ import {
 } from '../shared';
 import { AuthenticationService } from './authentication.service';
 
-@Controller('/auth')
+@Controller()
 @UseInterceptors(ClassSerializerInterceptor)
 export class AuthenticationController {
     constructor(
