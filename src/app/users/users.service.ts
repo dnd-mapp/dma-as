@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { DmaLogger } from '../logging';
+import { CreateUserData, UpdateUserData, User } from '../shared';
 import { hashPassword } from '../utils';
-import { CreateUserData, UpdateUserData, User } from './models';
 import { UsersRepository } from './users.repository';
 
 @Injectable()

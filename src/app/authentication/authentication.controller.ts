@@ -12,7 +12,6 @@ import {
 import { plainToInstance } from 'class-transformer';
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { DmaLogger } from '../logging';
-import { User } from '../users';
 import { valueToBase64 } from '../utils';
 import { AuthenticationService } from './authentication.service';
 import { ChangePasswordData, LoginData, SignUpData } from './models';
