@@ -24,5 +24,6 @@ node_modules/
 # Tests
 reports/
 
-certificate*.pem
+*.pem
+*.key
 .env
