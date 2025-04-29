@@ -1,5 +1,6 @@
 import { ConfigModuleOptions } from '@nestjs/config';
-import * as Joi from 'joi';
+import { Expose, plainToInstance, Type } from 'class-transformer';
+import { IsArray, IsOptional, IsPort, IsString, MinLength, validate } from 'class-validator';
 import { parseNumber } from '../utils';
 
 const ENV_NAME_HOST = 'HOST' as const;
@@ -37,13 +38,45 @@ export const appConfig = () =>
         cookieSigningSecret: process.env[ENV_NAME_COOKIE_SIGNING_SECRET],
     }) satisfies AppConfig;
 
-const appConfigSchema = Joi.object({
-    [ENV_NAME_HOST]: Joi.string().hostname().default('0.0.0.0'),
-    [ENV_NAME_PORT]: Joi.number().port().default(3000),
-    [ENV_NAME_SSL_CERT_PATH]: Joi.string(),
-    [ENV_NAME_SSL_KEY_PATH]: Joi.string(),
-    [ENV_NAME_COOKIE_SIGNING_SECRET]: Joi.string().length(64),
-});
+export class EnvironmentVariables {
+    @IsString()
+    @Expose()
+    @IsOptional()
+    [ENV_NAME_HOST]: string;
+
+    @IsPort()
+    @Expose()
+    @Type(() => String)
+    @IsOptional()
+    [ENV_NAME_PORT]: number;
+
+    @IsString()
+    @Expose()
+    @IsOptional()
+    [ENV_NAME_SSL_CERT_PATH]: string;
+
+    @IsString()
+    @Expose()
+    @IsOptional()
+    [ENV_NAME_SSL_KEY_PATH]: string;
+
+    @IsString()
+    @MinLength(64)
+    @Expose()
+    [ENV_NAME_COOKIE_SIGNING_SECRET]: string;
+}
+
+async function validateEnvironmentVariables(config: Record<string, unknown>) {
+    const validatedConfig = plainToInstance(EnvironmentVariables, config, {
+        enableImplicitConversion: true,
+        excludeExtraneousValues: true,
+    });
+
+    const errors = await validate(validatedConfig, { stopAtFirstError: true });
+
+    if (errors.length === 0) return;
+    throw new Error(errors[0].toString());
+}
 
 export const configOptions: ConfigModuleOptions = {
     cache: true,
@@ -51,9 +84,5 @@ export const configOptions: ConfigModuleOptions = {
     expandVariables: true,
     isGlobal: true,
     load: [appConfig],
-    validationSchema: appConfigSchema,
-    validationOptions: {
-        abortEarly: true,
-        allowUnknowns: false,
-    },
+    validate: validateEnvironmentVariables,
 };
