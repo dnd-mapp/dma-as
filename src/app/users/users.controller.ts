@@ -58,7 +58,7 @@ export class UsersController {
         @Body() userData: UpdateUserData,
         @Req() request: FastifyRequest
     ) {
-        this.validateResourceOwner(userIdParam, request.raw.authenticatedUser);
+        this.validateResourceOwner(userIdParam, request.authenticatedUser);
         this.logger.log(`Update user with ID "${userIdParam}"`);
 
         if (userIdParam !== userData.id) {
@@ -71,7 +71,7 @@ export class UsersController {
 
     @Delete('/:id')
     public async removeById(@Param('id') userIdParam: string, @Req() request: FastifyRequest) {
-        this.validateResourceOwner(userIdParam, request.raw.authenticatedUser);
+        this.validateResourceOwner(userIdParam, request.authenticatedUser);
         this.logger.log(`Remove user with ID "${userIdParam}"`);
 
         await this.usersService.removeById(userIdParam);
