@@ -1,5 +1,6 @@
 import fastifyCookie, { FastifyCookieOptions } from '@fastify/cookie';
 import { ValidationPipe } from '@nestjs/common';
+import { CorsOptions } from '@nestjs/common/interfaces/external/cors-options.interface';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
@@ -31,6 +32,7 @@ async function bootstrap() {
 
     const host = configService.get<string>('host');
     const port = configService.get<number>('port');
+    const allowedOrigins = configService.get<string[]>('allowedOrigins');
 
     const cookieOptions: FastifyCookieOptions = {
         secret: configService.get<string>('cookieSigningSecret'),
@@ -43,9 +45,15 @@ async function bootstrap() {
         },
     };
 
+    const corsOptions: CorsOptions = {
+        methods: ['GET', 'POST', 'PUT', 'DELETE'],
+        origin: allowedOrigins,
+    };
+
     await appContext.close();
 
     const app = await NestFactory.create<NestFastifyApplication>(AppModule, fastifyAdapter, {
+        cors: corsOptions,
         bufferLogs: true,
     });
     const logger = await app.resolve(DmaLogger);
