@@ -10,3 +10,5 @@ jobs:
     execute:
         name: Execute
         uses: dnd-mapp/actions/.github/workflows/build.yml@main
+        with:
+            COOKIE_SIGNING_SECRET: ${{ secrets.COOKIE_SIGNING_SECRET }}
