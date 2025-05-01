@@ -13,6 +13,15 @@ export class TokensRepository {
             await this.databaseService.token.findFirst({ where: { jti: jti }, include: { user: true } })
         );
 
+    public findAllByPti = async (pti: string) =>
+        plainToInstance(TokenMetadata, await this.databaseService.token.findMany({ where: { pti: pti } }));
+
+    public findAllByUserIdAndNotRevoked = async (userId: string) =>
+        plainToInstance(
+            TokenMetadata,
+            await this.databaseService.token.findMany({ where: { AND: [{ sub: userId }, { rvk: false }] } })
+        );
+
     public create = async (metadata: TokenMetadata) =>
         plainToInstance(
             TokenMetadata,
@@ -25,7 +34,35 @@ export class TokensRepository {
                     aud: metadata.aud,
                     iat: metadata.iat,
                     exp: metadata.exp,
+                    nbf: metadata.nbf,
+                    pti: metadata.pti ?? null,
                 },
             })
         );
+
+    public update = async (token: TokenMetadata) =>
+        plainToInstance(
+            TokenMetadata,
+            await this.databaseService.token.update({
+                where: { jti: token.jti },
+                data: {
+                    tpe: token.tpe,
+                    rvk: token.rvk,
+                    sub: token.sub,
+                    iss: token.iss,
+                    aud: token.aud,
+                    iat: token.iat,
+                    exp: token.exp,
+                    nbf: token.nbf,
+                },
+            })
+        );
+
+    public async removeByJti(jti: string) {
+        await this.databaseService.token.delete({ where: { jti: jti } });
+    }
+
+    public async removeAllBySub(userId: string) {
+        await this.databaseService.token.deleteMany({ where: { sub: userId } });
+    }
 }

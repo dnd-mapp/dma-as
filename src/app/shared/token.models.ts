@@ -40,6 +40,7 @@ export interface DecodedToken {
     };
     payload: {
         jti: string;
+        pti?: string;
         sub: string;
         iss: string;
         aud: string;
