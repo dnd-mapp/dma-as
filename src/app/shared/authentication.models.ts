@@ -1,4 +1,4 @@
-import { IsDate, IsNotEmpty, IsOptional, IsString, IsUrl, MinLength } from 'class-validator';
+import { IsBoolean, IsDate, IsNotEmpty, IsOptional, IsString, IsUrl, MinLength, ValidateIf } from 'class-validator';
 
 /** Maximum lifetime of an authorization code in ms, which currently is set to 5 minutes. */
 export const MAX_AUTHORIZATION_CODE_LIFETIME = 300_000 as const;
@@ -90,11 +90,17 @@ export class LoginData extends MessageWithState {
 export class TokenRequestData {
     @IsString()
     @IsNotEmpty()
-    public authorizationCode: string;
+    @ValidateIf((object) => !object.useRefreshToken)
+    public authorizationCode?: string;
 
     @IsString()
     @IsNotEmpty()
-    public codeVerifier: string;
+    @ValidateIf((object) => !object.useRefreshToken)
+    public codeVerifier?: string;
+
+    @IsBoolean()
+    @ValidateIf((object) => object.useRefreshToken)
+    public useRefreshToken?: boolean;
 }
 
 export class ChangePasswordData {

@@ -1,4 +1,5 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { ModuleRef } from '@nestjs/core';
 import { compare } from 'bcryptjs';
 import { DmaLogger } from '../logging';
 import {
@@ -9,16 +10,19 @@ import {
     MAX_AUTHORIZATION_CODE_LIFETIME,
     SignUpData,
     TokenRequestData,
+    TokenTypes,
     User,
 } from '../shared';
 import { UsersService } from '../users';
 import { hashPassword, valueToBase64, valueToSHA256 } from '../utils';
 import { AuthorizationRepository } from './authorization.repository';
+import { decodeToken } from './functions';
 import { TokensService } from './tokens.service';
 
 @Injectable()
 export class AuthenticationService {
     constructor(
+        private readonly moduleRef: ModuleRef,
         private readonly authorizationRepository: AuthorizationRepository,
         private readonly usersService: UsersService,
         private readonly tokensService: TokensService,
@@ -58,21 +62,54 @@ export class AuthenticationService {
         }
     }
 
-    public async requestToken(data: TokenRequestData) {
-        // TODO: Expand to accept and validate a refresh token to generate new tokens
-        const { authorizationCode, codeChallenge, createdAt, redirectUrl, userId } =
-            await this.authorizationRepository.getAuthorizationByAuthorizationCode(data.authorizationCode);
+    public async requestToken(data: TokenRequestData, refreshToken: string) {
+        const { authorizationCode, codeVerifier, useRefreshToken } = data;
+
+        if (authorizationCode && codeVerifier) {
+            return await this.generateTokensWithAuthorizationCode(authorizationCode, codeVerifier);
+        } else if (useRefreshToken) {
+            return await this.generateTokensFromRefreshTokens(refreshToken);
+        }
+        return null;
+    }
+
+    public async changePassword(data: ChangePasswordData, user: User) {
+        if (!(await this.comparePassword(data.oldPassword, user.password))) {
+            this.logger.warn(`Change password failed for User with ID "${user.id}" - Reason: Incorrect old password`);
+            throw new BadRequestException('Old password is incorrect');
+        }
+        user.password = await hashPassword(data.newPassword);
+
+        await this.usersService.updatePassword(user);
+        await this.tokensService.removeAllFromUser(user.id);
+
+        this.logger.log(`Change password successfully for User with ID "${user.id}"`);
+    }
+
+    private async comparePassword(password: string, hash: string) {
+        if (!hash) return false;
+        return await compare(password, hash);
+    }
+
+    private async generateTokensWithAuthorizationCode(authorizationCode: string, codeVerifier: string) {
+        const {
+            authorizationCode: storedAuthorizationCode,
+            codeChallenge,
+            createdAt,
+            redirectUrl,
+            userId,
+        } = await this.authorizationRepository.getAuthorizationByAuthorizationCode(authorizationCode);
 
         if (!this.validateTimespan(Date.now(), createdAt)) {
-            await this.authorizationRepository.remove(authorizationCode);
+            await this.authorizationRepository.remove(storedAuthorizationCode);
             this.logger.warn('Request for tokens failed - Reason: Authorization Code has expired');
             throw new BadRequestException('Authorization request took too long');
         }
-        if (!this.validateAuthorizationCode(data.authorizationCode, authorizationCode)) {
+        if (!this.validateAuthorizationCode(authorizationCode, storedAuthorizationCode)) {
             this.logger.warn('Request for tokens failed - Reason: Invalid Authorization Code');
             throw new BadRequestException('Invalid authorization code');
         }
-        if (!(await this.validateCodeChallenge(data.codeVerifier, codeChallenge))) {
+        if (!this.validateCodeChallenge(codeVerifier, codeChallenge)) {
             this.logger.warn('Request for tokens failed - Reason: Invalid Code Verifier');
             throw new BadRequestException('Invalid Code Verifier');
         }
@@ -84,24 +121,6 @@ export class AuthenticationService {
         this.logger.log(`Request for tokens succeeded. Creating tokens for User with ID "${userId}"`);
 
         return await this.tokensService.generateTokens(audience, userId);
-    }
-
-    public async changePassword(data: ChangePasswordData, user: User) {
-        if (!(await this.comparePassword(data.oldPassword, user.password))) {
-            this.logger.warn(`Change password failed for User with ID "${user.id}" - Reason: Incorrect old password`);
-            throw new BadRequestException('Old password is incorrect');
-        }
-        user.password = await hashPassword(data.newPassword);
-        await this.usersService.updatePassword(user);
-
-        // TODO: Discard tokens and request authentication
-
-        this.logger.log(`Change password successfully for User with ID "${user.id}"`);
-    }
-
-    private async comparePassword(password: string, hash: string) {
-        if (!hash) return false;
-        return await compare(password, hash);
     }
 
     private async updateAuthorization(state: string, userId: string) {
@@ -119,7 +138,7 @@ export class AuthenticationService {
         return received === stored;
     }
 
-    private async validateCodeChallenge(codeVerifier: string, storedCodeChallenge: string) {
+    private validateCodeChallenge(codeVerifier: string, storedCodeChallenge: string) {
         const codeChallenge = valueToBase64(valueToSHA256(codeVerifier));
         return codeChallenge === storedCodeChallenge;
     }
@@ -130,5 +149,24 @@ export class AuthenticationService {
             return audience;
         }
         return null;
+    }
+
+    private async generateTokensFromRefreshTokens(refreshToken: string) {
+        const { jti, tpe, sub, aud } = await decodeToken(refreshToken, this.moduleRef, this.logger);
+
+        if (tpe !== TokenTypes.REFRESH) {
+            this.logger.warn('Request for tokens failed - Reason: Invalid token type');
+            throw new UnauthorizedException('Unauthorized.');
+        }
+        const activeTokens = await this.tokensService.getCurrentActiveTokenFromUser(sub);
+
+        await Promise.all(
+            activeTokens.map((token) => {
+                if (token.tpe === TokenTypes.ACCESS) return this.tokensService.removeByJti(token.jti);
+                token.rvk = true;
+                return this.tokensService.update(token);
+            })
+        );
+        return await this.tokensService.generateTokens(aud, sub, jti);
     }
 }

@@ -7,8 +7,8 @@ export const ACCESS_TOKEN_EXPIRATION_TIME = 900_000 as const;
 /** Expiration time of the refresh token in ms, which is currently set at seven days. */
 export const REFRESH_TOKEN_EXPIRATION_TIME = 604_800_000 as const;
 
-/** The time in ms after which the refresh token can be used, which is currently set to two minutes before seven days. */
-export const REFRESH_TOKEN_NBF = 604_680_000 as const;
+/** The time in ms after which the refresh token can be used, which is currently set to 13 minutes. */
+export const REFRESH_TOKEN_NBF = 780_000 as const;
 
 export const TokenTypes = {
     ACCESS: 'ACCESS',
@@ -40,6 +40,7 @@ export interface DecodedToken {
     };
     payload: {
         jti: string;
+        pti?: string;
         sub: string;
         iss: string;
         aud: string;

@@ -25,9 +25,13 @@ export class TokensService {
         return await this.tokensRepository.findByJti(tokenId);
     }
 
-    public async generateTokens(audience: string, userId: string) {
-        const accessToken = await this.generateToken(audience, userId, TokenTypes.ACCESS);
-        const refreshToken = await this.generateToken(audience, userId, TokenTypes.REFRESH);
+    public async getCurrentActiveTokenFromUser(userId: string) {
+        return await this.tokensRepository.findAllByUserIdAndNotRevoked(userId);
+    }
+
+    public async generateTokens(audience: string, userId: string, pti?: string) {
+        const accessToken = await this.generateToken(audience, userId, TokenTypes.ACCESS, pti);
+        const refreshToken = await this.generateToken(audience, userId, TokenTypes.REFRESH, pti);
 
         return {
             accessToken: accessToken,
@@ -35,8 +39,37 @@ export class TokensService {
         };
     }
 
-    private async generateToken(audience: string, userId: string, tokenType: TokenType) {
-        const metadata = this.constructTokenMetadata(audience, userId, tokenType);
+    public async update(token: TokenMetadata) {
+        return await this.tokensRepository.update(token);
+    }
+
+    public async removeByJti(jti: string) {
+        await this.tokensRepository.removeByJti(jti);
+    }
+
+    public async removeRevokedToken(jti: string, pti?: string) {
+        let tokens: TokenMetadata[] = [];
+
+        if (pti) {
+            tokens = await this.tokensRepository.findAllByPti(pti);
+        }
+        if (tokens.length > 0) {
+            await Promise.all(
+                tokens.map((token) => {
+                    this.removeRevokedToken(token.jti, token.pti);
+                    this.removeByJti(token.jti);
+                })
+            );
+        }
+        await this.removeByJti(jti);
+    }
+
+    public async removeAllFromUser(userId: string) {
+        await this.tokensRepository.removeAllBySub(userId);
+    }
+
+    private async generateToken(audience: string, userId: string, tokenType: TokenType, pti?: string) {
+        const metadata = this.constructTokenMetadata(audience, userId, tokenType, pti);
 
         const tokenMetadata = await this.tokensRepository.create(metadata);
 
@@ -54,7 +87,7 @@ export class TokensService {
         };
     }
 
-    private constructTokenMetadata(audience: string, userId: string, tokenType: TokenType) {
+    private constructTokenMetadata(audience: string, userId: string, tokenType: TokenType, pti?: string) {
         const now = new Date();
 
         return plainToInstance(TokenMetadata, {
@@ -69,6 +102,7 @@ export class TokensService {
                     (tokenType === TokenTypes.ACCESS ? ACCESS_TOKEN_EXPIRATION_TIME : REFRESH_TOKEN_EXPIRATION_TIME)
             ),
             ...(tokenType === TokenTypes.REFRESH ? { nbf: new Date(now.getTime() + REFRESH_TOKEN_NBF) } : {}),
+            ...(pti ? { pti: pti } : {}),
         });
     }
 }

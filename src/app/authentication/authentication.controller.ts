@@ -23,6 +23,7 @@ import {
 } from '../shared';
 import { AuthenticationGuard } from './authentication.guard';
 import { AuthenticationService } from './authentication.service';
+import { retrieveSignedCookieValue } from './functions';
 
 @Controller()
 @UseInterceptors(ClassSerializerInterceptor)
@@ -67,8 +68,13 @@ export class AuthenticationController {
     }
 
     @Post('/token')
-    public async token(@Body() data: TokenRequestData, @Res({ passthrough: true }) response: FastifyReply) {
-        const { accessToken, refreshToken } = await this.authenticationService.requestToken(data);
+    public async token(
+        @Body() data: TokenRequestData,
+        @Req() request: FastifyRequest,
+        @Res({ passthrough: true }) response: FastifyReply
+    ) {
+        const receivedRefreshToken = retrieveSignedCookieValue(request, COOKIE_NAME_REFRESH_TOKEN, this.logger);
+        const { accessToken, refreshToken } = await this.authenticationService.requestToken(data, receivedRefreshToken);
 
         response
             .status(HttpStatus.OK)
@@ -85,8 +91,14 @@ export class AuthenticationController {
     @Post('/change-password')
     @HttpCode(HttpStatus.OK)
     @UseGuards(AuthenticationGuard)
-    public async changePassword(@Body() data: ChangePasswordData, @Req() request: FastifyRequest) {
+    public async changePassword(
+        @Body() data: ChangePasswordData,
+        @Req() request: FastifyRequest,
+        @Res({ passthrough: true }) response: FastifyReply
+    ) {
         this.logger.log(`Change password initiated for username "${request.authenticatedUser.username}"`);
         await this.authenticationService.changePassword(data, request.authenticatedUser);
+
+        response.clearCookie(COOKIE_NAME_ACCESS_TOKEN).clearCookie(COOKIE_NAME_REFRESH_TOKEN);
     }
 }
