@@ -85,8 +85,14 @@ export class AuthenticationController {
     @Post('/change-password')
     @HttpCode(HttpStatus.OK)
     @UseGuards(AuthenticationGuard)
-    public async changePassword(@Body() data: ChangePasswordData, @Req() request: FastifyRequest) {
+    public async changePassword(
+        @Body() data: ChangePasswordData,
+        @Req() request: FastifyRequest,
+        @Res({ passthrough: true }) response: FastifyReply
+    ) {
         this.logger.log(`Change password initiated for username "${request.authenticatedUser.username}"`);
         await this.authenticationService.changePassword(data, request.authenticatedUser);
+
+        response.clearCookie(COOKIE_NAME_ACCESS_TOKEN).clearCookie(COOKIE_NAME_REFRESH_TOKEN);
     }
 }
