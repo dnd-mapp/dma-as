@@ -5,7 +5,7 @@ export const MAX_AUTHORIZATION_CODE_LIFETIME = 300_000 as const;
 
 export const COOKIE_NAME_ACCESS_TOKEN = '__Host-Access-Token';
 
-export const CLIENT_ID_HEADER = 'dma_client_id';
+export const CLIENT_ID_HEADER = 'Dma-Client-Id';
 
 export const COOKIE_NAME_REFRESH_TOKEN = '__Host-Refresh-Token';
 
