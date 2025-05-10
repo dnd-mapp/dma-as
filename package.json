@@ -8,6 +8,7 @@
         "type": "git"
     },
     "scripts": {
+        "clean": "npx ts-node tools/clean.ts",
         "build": "npx nest build",
         "build-dev": "npx nest build -w",
         "docker-build": "docker build -f .docker/Dockerfile -t dnd-mapp/dma-as .",
