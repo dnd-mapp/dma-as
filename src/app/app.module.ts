@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { AuthenticationModule } from './authentication';
+import { ClientsModule } from './clients';
 import { configOptions, jwtOptions, provideThrottlerGuard, throttlerOptions } from './config';
 import { DatabaseModule } from './database';
 import { KeysModule } from './keys';
@@ -20,6 +21,7 @@ import { WellKnownController } from './well-known.controller';
         UsersModule,
         KeysModule,
         AuthenticationModule,
+        ClientsModule,
     ],
     controllers: [WellKnownController],
     providers: [provideThrottlerGuard()],

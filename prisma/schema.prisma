@@ -64,6 +64,29 @@ model Key {
     kid        String  @id()
     publicKey  String? @map(name: "public_key") @db.LongText
     privateKey String? @map(name: "private_key") @db.LongText
+    clientId   String
+
+    client Client @relation(fields: [clientId], references: [id], map: "fk_client_keys", onDelete: Cascade)
 
     @@map(name: "keys")
+}
+
+model Client {
+    id       String @id() @default(nanoid())
+    audience String @unique(map: "uq_client_audience")
+
+    redirectURLs RedirectURL[]
+    keys         Key[]
+
+    @@map(name: "clients")
+}
+
+model RedirectURL {
+    url      String
+    clientId String
+
+    client Client @relation(fields: [clientId], references: [id], map: "fk_client_redirect_url", onDelete: Cascade)
+
+    @@id(fields: [url, clientId])
+    @@map(name: "redirect_urls")
 }
