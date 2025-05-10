@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { KeysService } from '../keys';
+import { Client, CreateClientData } from '../shared';
 import { ClientsRepository } from './clients.repository';
-import { Client, CreateClientData } from './models';
 
 @Injectable()
 export class ClientsService {

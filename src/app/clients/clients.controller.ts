@@ -14,8 +14,8 @@ import {
 } from '@nestjs/common';
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { AuthenticationGuard } from '../authentication';
+import { Client, CreateClientData } from '../shared';
 import { ClientsService } from './clients.service';
-import { Client, CreateClientData } from './models';
 
 @Controller('clients')
 @UseGuards(AuthenticationGuard)
