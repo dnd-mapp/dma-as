@@ -10,12 +10,15 @@ import {
     Put,
     Req,
     Res,
+    UseGuards,
 } from '@nestjs/common';
 import { FastifyReply, FastifyRequest } from 'fastify';
+import { AuthenticationGuard } from '../authentication';
 import { ClientsService } from './clients.service';
 import { Client, CreateClientData } from './models';
 
 @Controller('clients')
+@UseGuards(AuthenticationGuard)
 export class ClientsController {
     constructor(private readonly clientsService: ClientsService) {}
 
