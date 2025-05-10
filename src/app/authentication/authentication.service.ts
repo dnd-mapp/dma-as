@@ -13,11 +13,11 @@ import {
     TokenTypes,
     User,
 } from '../shared';
+import { TokensService } from '../tokens';
 import { UsersService } from '../users';
 import { hashPassword, valueToBase64, valueToSHA256 } from '../utils';
 import { AuthorizationRepository } from './authorization.repository';
 import { decodeToken } from './functions';
-import { TokensService } from './tokens.service';
 
 @Injectable()
 export class AuthenticationService {

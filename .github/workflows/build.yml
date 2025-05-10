@@ -12,3 +12,4 @@ jobs:
         uses: dnd-mapp/actions/.github/workflows/build.yml@main
         secrets:
             COOKIE_SIGNING_SECRET: ${{ secrets.COOKIE_SIGNING_SECRET }}
+            ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}

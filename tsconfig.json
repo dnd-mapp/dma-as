@@ -1,4 +1,6 @@
 {
+    "references": [{ "path": "./tsconfig.app.json" }, { "path": "./tsconfig.spec.json" }],
+    "exclude": ["node_modules", "dist"],
     "compileOnSave": false,
     "compilerOptions": {
         "baseUrl": "./",

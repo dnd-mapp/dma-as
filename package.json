@@ -8,6 +8,7 @@
         "type": "git"
     },
     "scripts": {
+        "clean": "npx ts-node tools/clean.ts",
         "build": "npx nest build",
         "build-dev": "npx nest build -w",
         "docker-build": "docker build -f .docker/Dockerfile -t dnd-mapp/dma-as .",
@@ -17,6 +18,9 @@
         "lint": "npx eslint \"src/**/*.ts\"",
         "format:check": "npx prettier -l **/*",
         "format:write": "npx prettier -w **/*"
+    },
+    "prisma": {
+        "seed": "ts-node --transpile-only prisma/seed.ts"
     },
     "dependencies": {
         "@fastify/cookie": "~11.0.0",

@@ -4,7 +4,7 @@ import { JwtService } from '@nestjs/jwt';
 import { FastifyRequest } from 'fastify';
 import { DmaLogger } from '../logging';
 import { DecodedToken } from '../shared';
-import { TokensService } from './tokens.service';
+import { TokensService } from '../tokens';
 
 export function retrieveSignedCookieValue(request: FastifyRequest, cookieName: string, logger: DmaLogger) {
     const cookie = request.cookies[cookieName];
