@@ -18,6 +18,9 @@
         "format:check": "npx prettier -l **/*",
         "format:write": "npx prettier -w **/*"
     },
+    "prisma": {
+        "seed": "ts-node --transpile-only prisma/seed.ts"
+    },
     "dependencies": {
         "@fastify/cookie": "~11.0.0",
         "@nestjs/common": "~11.0.0",
