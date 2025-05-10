@@ -37,17 +37,18 @@ export class TokensService {
         const key = await this.keysService.getKeysByClientId(client.id);
 
         const params = {
-            audience: client.audience,
             userId: userId,
             pti: pti,
             key: key,
         };
         const accessToken = await this.generateToken({
             ...params,
+            audience: client.audience,
             tokenType: TokenTypes.ACCESS,
         });
         const refreshToken = await this.generateToken({
             ...params,
+            audience: 'dnd-mapp/authorization-server',
             tokenType: TokenTypes.REFRESH,
         });
 
