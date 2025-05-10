@@ -59,3 +59,11 @@ model Token {
 
     @@map(name: "tokens")
 }
+
+model Key {
+    kid        String  @id()
+    publicKey  String? @map(name: "public_key") @db.LongText
+    privateKey String? @map(name: "private_key") @db.LongText
+
+    @@map(name: "keys")
+}

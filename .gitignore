@@ -27,3 +27,6 @@ reports/
 *.pem
 *.key
 .env
+
+.docker/mariadb/
+.docker/dbeaver-workspace/
