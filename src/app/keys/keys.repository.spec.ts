@@ -1,18 +1,20 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { KeysService } from './keys.service';
+import { Test } from '@nestjs/testing';
+import { AppModule } from '../app.module';
+import { KeysRepository } from './keys.repository';
 
 describe('KeysRepository', () => {
-    let service: KeysService;
-
-    beforeEach(async () => {
-        const module: TestingModule = await Test.createTestingModule({
-            providers: [KeysService],
+    async function setupTest() {
+        const module = await Test.createTestingModule({
+            imports: [AppModule],
         }).compile();
 
-        service = module.get<KeysService>(KeysService);
-    });
+        return {
+            repository: module.get(KeysRepository),
+        };
+    }
 
-    it('should be defined', () => {
-        expect(service).toBeDefined();
+    it('should be defined', async () => {
+        const { repository } = await setupTest();
+        expect(repository).toBeDefined();
     });
 });
