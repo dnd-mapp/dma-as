@@ -52,6 +52,15 @@ export class ClientsRepository {
             })
         );
 
+    public findOneByRedirectURL = async (redirectURL: string) =>
+        plainToInstance(
+            Client,
+            await this.databaseService.client.findFirst({
+                ...selectedClientAttributes,
+                where: { redirectURLs: { some: { url: redirectURL } } },
+            })
+        );
+
     public findByAudience = async (audience: string) =>
         plainToInstance(
             Client,

@@ -3,22 +3,6 @@ import { IsBoolean, IsDate, IsNotEmpty, IsOptional, IsString, IsUrl, MinLength, 
 /** Maximum lifetime of an authorization code in ms, which currently is set to 5 minutes. */
 export const MAX_AUTHORIZATION_CODE_LIFETIME = 300_000 as const;
 
-export const AudienceByRedirectUrl = {
-    'dnd-mapp/authentication-server': [
-        'https://auth.dndmapp.nl.eu.org/server',
-        'https://auth.dndmapp.nl.eu.org/app',
-        'https://localhost.auth.dndmapp.net/server',
-        'https://localhost.auth.dndmapp.net/app',
-    ],
-    'dnd-mapp/app': ['https://www.dndmapp.nl.eu.org/app', 'https://localhost.dndmapp.net/app'],
-    'dnd-mapp/api': [
-        'https://api.dndmapp.nl.eu.org/server',
-        'https://api.dndmapp.nl.eu.org/app',
-        'https://localhost.api.dndmapp.net/server',
-        'https://localhost.api.dndmapp.net/app',
-    ],
-};
-
 export const COOKIE_NAME_ACCESS_TOKEN = '__Host-Access-Token';
 
 export const COOKIE_NAME_REFRESH_TOKEN = '__Host-Refresh-Token';

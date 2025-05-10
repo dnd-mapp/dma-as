@@ -27,6 +27,14 @@ export class ClientsService {
         return await this.clientsRepository.findById(clientId);
     }
 
+    public async getByRedirectURL(redirectURL: string) {
+        return await this.clientsRepository.findOneByRedirectURL(redirectURL);
+    }
+
+    public async getByAudience(audience: string) {
+        return await this.clientsRepository.findByAudience(audience);
+    }
+
     public async update(data: Client) {
         await this.validateUniqueAudience(data.audience, `Audience "${data.audience}" is already in use.`, data.id);
 
@@ -35,10 +43,6 @@ export class ClientsService {
 
     public async removeById(clientId: string) {
         await this.clientsRepository.removeById(clientId);
-    }
-
-    private async getByAudience(audience: string) {
-        return await this.clientsRepository.findByAudience(audience);
     }
 
     private async validateUniqueAudience(audience: string, message: string, clientId?: string) {

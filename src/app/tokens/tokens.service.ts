@@ -1,8 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { plainToInstance } from 'class-transformer';
+import { KeysService } from '../keys';
 import {
     ACCESS_TOKEN_EXPIRATION_TIME,
+    Client,
+    GenerateTokenParams,
     REFRESH_TOKEN_EXPIRATION_TIME,
     REFRESH_TOKEN_NBF,
     TokenMetadata,
@@ -15,6 +18,7 @@ import { TokensRepository } from './tokens.repository';
 export class TokensService {
     constructor(
         private readonly jwtService: JwtService,
+        private readonly keysService: KeysService,
         private readonly tokensRepository: TokensRepository
     ) {
         // TODO: setup cron job to periodically remove expired or revoked tokens from the database
@@ -29,9 +33,23 @@ export class TokensService {
         return await this.tokensRepository.findAllByUserIdAndNotRevoked(userId);
     }
 
-    public async generateTokens(audience: string, userId: string, pti?: string) {
-        const accessToken = await this.generateToken(audience, userId, TokenTypes.ACCESS, pti);
-        const refreshToken = await this.generateToken(audience, userId, TokenTypes.REFRESH, pti);
+    public async generateTokens(client: Client, userId: string, pti?: string) {
+        const key = await this.keysService.getKeysByClientId(client.id);
+
+        const params = {
+            audience: client.audience,
+            userId: userId,
+            pti: pti,
+            key: key,
+        };
+        const accessToken = await this.generateToken({
+            ...params,
+            tokenType: TokenTypes.ACCESS,
+        });
+        const refreshToken = await this.generateToken({
+            ...params,
+            tokenType: TokenTypes.REFRESH,
+        });
 
         return {
             accessToken: accessToken,
@@ -68,21 +86,31 @@ export class TokensService {
         await this.tokensRepository.removeAllBySub(userId);
     }
 
-    private async generateToken(audience: string, userId: string, tokenType: TokenType, pti?: string) {
+    private async generateToken(params: GenerateTokenParams) {
+        const { audience, userId, tokenType, pti, key } = params;
         const metadata = this.constructTokenMetadata(audience, userId, tokenType, pti);
 
         const tokenMetadata = await this.tokensRepository.create(metadata);
 
         return {
-            token: await this.jwtService.signAsync({
-                jti: tokenMetadata.jti,
-                sub: tokenMetadata.sub,
-                iss: tokenMetadata.iss,
-                iat: Number.parseInt(`${tokenMetadata.iat.getTime() / 1000}`),
-                exp: Number.parseInt(`${tokenMetadata.exp.getTime() / 1000}`),
-                aud: tokenMetadata.aud,
-                ...(tokenMetadata.nbf ? { nbf: Number.parseInt(`${tokenMetadata.nbf.getTime() / 1000}`) } : {}),
-            }),
+            token: await this.jwtService.signAsync(
+                {
+                    jti: tokenMetadata.jti,
+                    sub: tokenMetadata.sub,
+                    iss: tokenMetadata.iss,
+                    iat: Number.parseInt(`${tokenMetadata.iat.getTime() / 1000}`),
+                    exp: Number.parseInt(`${tokenMetadata.exp.getTime() / 1000}`),
+                    aud: tokenMetadata.aud,
+                    ...(tokenMetadata.nbf ? { nbf: Number.parseInt(`${tokenMetadata.nbf.getTime() / 1000}`) } : {}),
+                },
+                {
+                    header: {
+                        alg: 'RS256',
+                        kid: key.kid,
+                    },
+                    privateKey: key.toPEM(true),
+                }
+            ),
             expirationTime: tokenMetadata.exp,
         };
     }
