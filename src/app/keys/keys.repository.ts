@@ -7,7 +7,10 @@ import { KeyData } from './models';
 export class KeysRepository {
     constructor(private readonly databaseService: DatabaseService) {}
 
-    public getAllKeys = async () => plainToInstance(KeyData, await this.databaseService.key.findMany());
+    public findAllKeys = async () => plainToInstance(KeyData, await this.databaseService.key.findMany());
+
+    public findAllByClientId = async (clientId: string) =>
+        plainToInstance(KeyData, await this.databaseService.key.findMany({ where: { clientId: clientId } }));
 
     public store = async (data: KeyData) =>
         plainToInstance(

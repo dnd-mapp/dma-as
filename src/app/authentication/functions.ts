@@ -1,7 +1,8 @@
-import { UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 import { FastifyRequest } from 'fastify';
+import { KeysService } from '../keys';
 import { DmaLogger } from '../logging';
 import { DecodedToken } from '../shared';
 import { TokensService } from '../tokens';
@@ -22,14 +23,30 @@ export function retrieveSignedCookieValue(request: FastifyRequest, cookieName: s
     return unsignedCookie.value;
 }
 
+function retrieveKidFromTokenHeader(token: string, logger: DmaLogger): string {
+    try {
+        const [tokenHeaderBase64] = token.split('.');
+        const tokenHeader = JSON.parse(Buffer.from(tokenHeaderBase64, 'base64').toString('utf8'));
+
+        return tokenHeader.kid;
+    } catch (error) {
+        logger.warn(`Token not accepted - Reason: ${(error as Error).message}`);
+        throw new BadRequestException('Unauthorized');
+    }
+}
+
 export async function decodeToken(token: string, moduleRef: ModuleRef, logger: DmaLogger) {
     const jwtService = moduleRef.get(JwtService, { strict: false });
     const tokensService = moduleRef.get(TokensService, { strict: false });
+    const keysService = moduleRef.get(KeysService, { strict: false });
 
     let decodedToken: DecodedToken = null;
 
+    const kid = retrieveKidFromTokenHeader(token, logger);
+    const keys = keysService.getKeysByKid(kid);
+
     try {
-        decodedToken = await jwtService.verifyAsync<DecodedToken>(token);
+        decodedToken = await jwtService.verifyAsync(token, { publicKey: keys.toPEM() });
     } catch (error) {
         logger.warn(`Token not accepted - Reason: ${(error as Error).message}`);
         throw new UnauthorizedException('Unauthorized');

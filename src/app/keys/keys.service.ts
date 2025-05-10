@@ -28,13 +28,15 @@ export class KeysService implements OnModuleInit {
         return this.keystore.toJSON();
     }
 
-    public getKeysByKid(kid: string) {
-        const key = this.keystore.get({ kid: kid });
+    public async getKeysByClientId(clientId: string) {
+        const storedKeys = await this.keysRepository.findAllByClientId(clientId);
 
-        return {
-            public: key.toPEM(),
-            private: key.toPEM(true),
-        };
+        const kid = storedKeys.filter(({ privateKey }) => privateKey).map(({ kid }) => kid)[0];
+        return this.getKeysByKid(kid);
+    }
+
+    public getKeysByKid(kid: string) {
+        return this.keystore.get({ kid: kid });
     }
 
     public async generateKeyPair(clientId: string) {
@@ -65,7 +67,7 @@ export class KeysService implements OnModuleInit {
     }
 
     private async importStoredKeys() {
-        const keys = await this.keysRepository.getAllKeys();
+        const keys = await this.keysRepository.findAllKeys();
 
         keys.forEach((key) => {
             if (key.privateKey) this.keystore.add(this.decryptPrivateKey(key.privateKey), 'pem');

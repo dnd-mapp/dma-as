@@ -8,6 +8,7 @@
         "type": "git"
     },
     "scripts": {
+        "postinstall": "npx prisma generate",
         "clean": "npx ts-node tools/clean.ts",
         "build": "npx nest build",
         "build-dev": "npx nest build -w",

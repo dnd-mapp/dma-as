@@ -1,4 +1,5 @@
 import { Type } from 'class-transformer';
+import { JWK } from 'node-jose';
 import { User } from './user.models';
 
 /** Expiration time of the access token in ms, which is currently set at fifteen minutes. */
@@ -49,4 +50,12 @@ export interface DecodedToken {
         exp: number;
     };
     signature: string;
+}
+
+export interface GenerateTokenParams {
+    audience: string;
+    key: JWK.Key;
+    userId: string;
+    tokenType: TokenType;
+    pti?: string;
 }

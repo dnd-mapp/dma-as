@@ -1,9 +1,9 @@
 import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { compare } from 'bcryptjs';
+import { ClientsService } from '../clients';
 import { DmaLogger } from '../logging';
 import {
-    AudienceByRedirectUrl,
     AuthorizeRequest,
     ChangePasswordData,
     LoginData,
@@ -23,10 +23,11 @@ import { decodeToken } from './functions';
 export class AuthenticationService {
     constructor(
         private readonly moduleRef: ModuleRef,
-        private readonly authorizationRepository: AuthorizationRepository,
+        private readonly logger: DmaLogger,
         private readonly usersService: UsersService,
         private readonly tokensService: TokensService,
-        private readonly logger: DmaLogger
+        private readonly clientsService: ClientsService,
+        private readonly authorizationRepository: AuthorizationRepository
     ) {
         this.logger.setContext('AuthenticationService');
     }
@@ -113,14 +114,17 @@ export class AuthenticationService {
             this.logger.warn('Request for tokens failed - Reason: Invalid Code Verifier');
             throw new BadRequestException('Invalid Code Verifier');
         }
-        // TODO: Make this more dynamic/configurable
-        const audience = this.resolveAudienceFromRedirectUrl(redirectUrl);
+        const client = await this.clientsService.getByRedirectURL(redirectUrl);
 
+        if (!client) {
+            this.logger.warn('Request for tokens failed - Reason: Invalid redirect URL');
+            throw new BadRequestException('Invalid redirect URL');
+        }
         await this.authorizationRepository.remove(authorizationCode);
 
         this.logger.log(`Request for tokens succeeded. Creating tokens for User with ID "${userId}"`);
 
-        return await this.tokensService.generateTokens(audience, userId);
+        return await this.tokensService.generateTokens(client, userId);
     }
 
     private async updateAuthorization(state: string, userId: string) {
@@ -143,16 +147,9 @@ export class AuthenticationService {
         return codeChallenge === storedCodeChallenge;
     }
 
-    private resolveAudienceFromRedirectUrl(redirectUrl: string) {
-        for (const [audience, urls] of Object.entries(AudienceByRedirectUrl)) {
-            if (!urls.includes(redirectUrl)) continue;
-            return audience;
-        }
-        return null;
-    }
-
     private async generateTokensFromRefreshTokens(refreshToken: string) {
         const { jti, tpe, sub, aud } = await decodeToken(refreshToken, this.moduleRef, this.logger);
+        const client = await this.clientsService.getByAudience(aud);
 
         if (tpe !== TokenTypes.REFRESH) {
             this.logger.warn('Request for tokens failed - Reason: Invalid token type');
@@ -167,6 +164,6 @@ export class AuthenticationService {
                 return this.tokensService.update(token);
             })
         );
-        return await this.tokensService.generateTokens(aud, sub, jti);
+        return await this.tokensService.generateTokens(client, sub, jti);
     }
 }

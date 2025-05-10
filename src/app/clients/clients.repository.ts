@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
 import { DatabaseService } from '../database';
-import { Client, CreateClientData } from './models';
+import { Client, CreateClientData } from '../shared';
 
 const selectedClientAttributes = {
     select: {
@@ -49,6 +49,15 @@ export class ClientsRepository {
             await this.databaseService.client.findFirst({
                 ...selectedClientAttributes,
                 where: { id: clientId },
+            })
+        );
+
+    public findOneByRedirectURL = async (redirectURL: string) =>
+        plainToInstance(
+            Client,
+            await this.databaseService.client.findFirst({
+                ...selectedClientAttributes,
+                where: { redirectURLs: { some: { url: redirectURL } } },
             })
         );
 
