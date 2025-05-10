@@ -10,7 +10,6 @@
 !*.mjs
 !*.json
 !*.yml
-!*.prisma
 
 dist/
 reports/
