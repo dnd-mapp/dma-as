@@ -15,6 +15,7 @@ import { DmaLogger } from '../logging';
 import {
     AuthorizeRequest,
     ChangePasswordData,
+    CLIENT_ID_HEADER,
     COOKIE_NAME_ACCESS_TOKEN,
     COOKIE_NAME_REFRESH_TOKEN,
     LoginData,
@@ -74,16 +75,17 @@ export class AuthenticationController {
         @Res({ passthrough: true }) response: FastifyReply
     ) {
         const receivedRefreshToken = retrieveSignedCookieValue(request, COOKIE_NAME_REFRESH_TOKEN, this.logger);
-        const { accessToken, refreshToken } = await this.authenticationService.requestToken(data, receivedRefreshToken);
+        const { tokens, clientId } = await this.authenticationService.requestToken(data, receivedRefreshToken);
 
         response
             .status(HttpStatus.OK)
-            .setCookie(COOKIE_NAME_ACCESS_TOKEN, accessToken.token, {
-                expires: accessToken.expirationTime,
+            .headers({ [CLIENT_ID_HEADER]: clientId })
+            .setCookie(`${COOKIE_NAME_ACCESS_TOKEN}-${clientId}`, tokens.accessToken.token, {
+                expires: tokens.accessToken.expirationTime,
                 path: '/',
             })
-            .setCookie(COOKIE_NAME_REFRESH_TOKEN, refreshToken.token, {
-                expires: refreshToken.expirationTime,
+            .setCookie(COOKIE_NAME_REFRESH_TOKEN, tokens.refreshToken.token, {
+                expires: tokens.refreshToken.expirationTime,
                 path: '/',
             });
     }

@@ -124,7 +124,10 @@ export class AuthenticationService {
 
         this.logger.log(`Request for tokens succeeded. Creating tokens for User with ID "${userId}"`);
 
-        return await this.tokensService.generateTokens(client, userId);
+        return {
+            tokens: await this.tokensService.generateTokens(client, userId),
+            clientId: client.id,
+        };
     }
 
     private async updateAuthorization(state: string, userId: string) {
@@ -164,6 +167,9 @@ export class AuthenticationService {
                 return this.tokensService.update(token);
             })
         );
-        return await this.tokensService.generateTokens(client, sub, jti);
+        return {
+            tokens: await this.tokensService.generateTokens(client, sub, jti),
+            clientId: client.id,
+        };
     }
 }
