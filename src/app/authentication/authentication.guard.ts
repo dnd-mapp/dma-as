@@ -16,7 +16,7 @@ export class AuthenticationGuard implements CanActivate {
 
     public async canActivate(context: ExecutionContext) {
         const request = context.switchToHttp().getRequest<FastifyRequest>();
-        const clientId = request.headers[CLIENT_ID_HEADER] as string;
+        const clientId = request.headers[CLIENT_ID_HEADER.toLowerCase()] as string;
 
         const decodedToken = await validateCookie({
             request: request,
