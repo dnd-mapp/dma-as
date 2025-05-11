@@ -61,9 +61,10 @@ model Token {
 }
 
 model Key {
-    kid        String  @id()
-    publicKey  String? @map(name: "public_key") @db.LongText
-    privateKey String? @map(name: "private_key") @db.LongText
+    kid        String   @id()
+    publicKey  String?  @map(name: "public_key") @db.LongText
+    privateKey String?  @map(name: "private_key") @db.LongText
+    lastUsed   DateTime @default(now()) @map(name: "last_used")
     clientId   String
 
     client Client @relation(fields: [clientId], references: [id], map: "fk_client_keys", onDelete: Cascade)
