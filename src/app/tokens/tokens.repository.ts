@@ -73,4 +73,8 @@ export class TokensRepository {
     public async removeAllByAud(aud: string) {
         await this.databaseService.token.deleteMany({ where: { aud: aud } });
     }
+
+    public async removeAllExpired() {
+        await this.databaseService.token.deleteMany({ where: { exp: { lt: new Date() } } });
+    }
 }

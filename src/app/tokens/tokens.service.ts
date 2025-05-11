@@ -1,7 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { Cron } from '@nestjs/schedule';
 import { plainToInstance } from 'class-transformer';
 import { KeysService } from '../keys';
+import { DmaLogger } from '../logging';
 import {
     ACCESS_TOKEN_EXPIRATION_TIME,
     Client,
@@ -18,11 +20,11 @@ import { TokensRepository } from './tokens.repository';
 export class TokensService {
     constructor(
         private readonly jwtService: JwtService,
+        private readonly logger: DmaLogger,
         private readonly keysService: KeysService,
         private readonly tokensRepository: TokensRepository
     ) {
-        // TODO: setup cron job to periodically remove expired or revoked tokens from the database
-        // TODO: Remove cron job before application is shut down
+        this.logger.setContext('TokensRepository');
     }
 
     public async getById(tokenId: string) {
@@ -83,6 +85,13 @@ export class TokensService {
 
     public async removeAllByAudience(audience: string) {
         await this.tokensRepository.removeAllByAud(audience);
+    }
+
+    // Runs every whole hour
+    @Cron('0 0 * * * *')
+    protected async removeExpired() {
+        this.logger.log('Removing expired tokens.');
+        await this.tokensRepository.removeAllExpired();
     }
 
     private async generateToken(params: GenerateTokenParams) {

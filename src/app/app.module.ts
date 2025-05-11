@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
+import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { AuthenticationModule } from './authentication';
 import { ClientsModule } from './clients';
@@ -16,6 +17,7 @@ import { WellKnownController } from './well-known.controller';
         ConfigModule.forRoot(configOptions),
         ThrottlerModule.forRoot(throttlerOptions),
         JwtModule.registerAsync(jwtOptions),
+        ScheduleModule.forRoot(),
         DatabaseModule,
         LoggingModule,
         UsersModule,
