@@ -91,3 +91,10 @@ model RedirectURL {
     @@id(fields: [url, clientId])
     @@map(name: "redirect_urls")
 }
+
+model Role {
+    id   String @id() @default(nanoid())
+    name String @unique(map: "uq_role_name")
+
+    @@map(name: "role")
+}

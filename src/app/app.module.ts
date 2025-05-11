@@ -9,6 +9,7 @@ import { configOptions, jwtOptions, provideThrottlerGuard, throttlerOptions } fr
 import { DatabaseModule } from './database';
 import { KeysModule } from './keys';
 import { LoggingModule } from './logging';
+import { RolesModule } from './roles';
 import { UsersModule } from './users';
 import { WellKnownController } from './well-known.controller';
 
@@ -24,6 +25,7 @@ import { WellKnownController } from './well-known.controller';
         KeysModule,
         AuthenticationModule,
         ClientsModule,
+        RolesModule,
     ],
     controllers: [WellKnownController],
     providers: [provideThrottlerGuard()],
