@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Cron } from '@nestjs/schedule';
 import { plainToInstance } from 'class-transformer';
@@ -17,7 +17,7 @@ import {
 import { TokensRepository } from './tokens.repository';
 
 @Injectable()
-export class TokensService {
+export class TokensService implements OnModuleInit {
     constructor(
         private readonly jwtService: JwtService,
         private readonly logger: DmaLogger,
@@ -25,6 +25,10 @@ export class TokensService {
         private readonly tokensRepository: TokensRepository
     ) {
         this.logger.setContext('TokensRepository');
+    }
+
+    public async onModuleInit() {
+        await this.removeExpired();
     }
 
     public async getById(tokenId: string) {
