@@ -88,12 +88,8 @@ export class UsersService {
     }
 
     private async validateUsername(username: string, errorMessage: string, userId?: string) {
-        const queryResult = await this.getByUsername(username);
+        const query = await this.getByUsername(username);
 
-        if (((userId && queryResult) || queryResult) && queryResult.id !== userId) {
-            // Should actually throw a NotFoundRequestException, but in order to prevent giving away too much information
-            // about existing User accounts we throw a BadRequestException instead.
-            throw new BadRequestException(errorMessage);
-        }
+        if (query && (!userId || userId !== query.id)) throw new BadRequestException(errorMessage);
     }
 }
