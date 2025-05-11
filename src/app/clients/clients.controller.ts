@@ -30,11 +30,10 @@ export class ClientsController {
     @Post()
     public async create(@Body() data: CreateClientData, @Res({ passthrough: true }) response: FastifyReply) {
         const createdClient = await this.clientsService.create(data);
-        const path = new URL(response.request.url).pathname;
 
         response
             .status(HttpStatus.CREATED)
-            .headers({ location: `${path}/${createdClient.id}` })
+            .headers({ location: `${response.request.url}/${createdClient.id}` })
             .send(createdClient);
     }
 
@@ -56,11 +55,9 @@ export class ClientsController {
         @Param('clientId') clientIdParam: string,
         @Body() data: Client
     ) {
-        const path = new URL(request.url).pathname;
-
         if (data.id !== clientIdParam) {
             throw new BadRequestException(
-                `It's not allowed to change Client on path "${path}" with data from Client with ID "${clientIdParam}"`
+                `It's not allowed to change Client on path "${request.url}" with data from Client with ID "${clientIdParam}"`
             );
         }
         return await this.clientsService.update(data);
