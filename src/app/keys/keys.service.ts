@@ -57,10 +57,13 @@ export class KeysService implements OnModuleInit {
         return keyPair.kid;
     }
 
-    public async rotate(kid: string, clientId: string) {
+    public async rotateKeysForClient(clientId: string) {
+        const { kid } = await this.getKeysByClientId(clientId);
+
         const key = this.keystore.get({ kid: kid });
         this.keystore.remove(key);
 
+        await this.keystore.add(key.toPEM(), 'pem');
         await this.keysRepository.removePrivateKeyByKid(kid);
 
         return await this.generateKeyPair(clientId);
