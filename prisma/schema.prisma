@@ -98,3 +98,10 @@ model Role {
 
     @@map(name: "role")
 }
+
+model Scope {
+    id   String @id() @default(nanoid())
+    name String @unique(map: "uq_scope_name")
+
+    @@map(name: "scope")
+}

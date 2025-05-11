@@ -10,6 +10,7 @@ import { DatabaseModule } from './database';
 import { KeysModule } from './keys';
 import { LoggingModule } from './logging';
 import { RolesModule } from './roles';
+import { ScopesModule } from './scopes';
 import { UsersModule } from './users';
 import { WellKnownController } from './well-known.controller';
 
@@ -26,6 +27,7 @@ import { WellKnownController } from './well-known.controller';
         AuthenticationModule,
         ClientsModule,
         RolesModule,
+        ScopesModule,
     ],
     controllers: [WellKnownController],
     providers: [provideThrottlerGuard()],
