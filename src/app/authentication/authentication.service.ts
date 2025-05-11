@@ -82,7 +82,7 @@ export class AuthenticationService {
         user.password = await hashPassword(data.newPassword);
 
         await this.usersService.updatePassword(user);
-        await this.tokensService.removeAllFromUser(user.id);
+        await this.tokensService.revokeAllFromUser(user.id);
 
         this.logger.log(`Change password successfully for User with ID "${user.id}"`);
     }

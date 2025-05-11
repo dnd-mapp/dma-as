@@ -1,10 +1,11 @@
 import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { Cron } from '@nestjs/schedule';
 import { plainToInstance } from 'class-transformer';
 import { createCipheriv, createDecipheriv, randomBytes } from 'crypto';
 import { JWK } from 'node-jose';
 import { KeysRepository } from './keys.repository';
-import { KeyData } from './models';
+import { KeyData, TIME_30_DAYS } from './models';
 import { KEY_STORE } from './providers';
 
 @Injectable()
@@ -22,6 +23,7 @@ export class KeysService implements OnModuleInit {
 
     public async onModuleInit() {
         await this.importStoredKeys();
+        await this.removePublicKeys();
     }
 
     public getKeys() {
@@ -67,6 +69,22 @@ export class KeysService implements OnModuleInit {
         await this.keysRepository.removePrivateKeyByKid(kid);
 
         return await this.generateKeyPair(clientId);
+    }
+
+    // Runs every day at 03:00.
+    @Cron('0 0 03 * * *')
+    protected async removePublicKeys() {
+        const keys = await this.keysRepository.findAllKeys();
+
+        await Promise.all(
+            keys.map((key) => {
+                if (key.lastUsed.getTime() + TIME_30_DAYS > Date.now()) return;
+                const storedKey = this.getKeysByKid(key.kid);
+
+                this.keystore.remove(storedKey);
+                this.keysRepository.removeByKid(key.kid);
+            })
+        );
     }
 
     private async importStoredKeys() {

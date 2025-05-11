@@ -62,11 +62,19 @@ export class TokensRepository {
         await this.databaseService.token.delete({ where: { jti: jti } });
     }
 
-    public async removeAllBySub(userId: string) {
-        await this.databaseService.token.deleteMany({ where: { sub: userId } });
+    public async revokeAllBySub(userId: string) {
+        await this.databaseService.token.updateMany({ where: { sub: userId }, data: { rvk: true } });
+    }
+
+    public async revokeByJti(jti: string) {
+        await this.databaseService.token.update({ where: { jti: jti }, data: { rvk: true } });
     }
 
     public async removeAllByAud(aud: string) {
         await this.databaseService.token.deleteMany({ where: { aud: aud } });
+    }
+
+    public async removeAllExpired() {
+        await this.databaseService.token.deleteMany({ where: { exp: { lt: new Date() } } });
     }
 }
