@@ -14,7 +14,7 @@ import {
 } from '@nestjs/common';
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { AuthenticationGuard } from '../authentication';
-import { Client, CreateClientData } from '../shared';
+import { Client, COOKIE_NAME_ACCESS_TOKEN, COOKIE_NAME_REFRESH_TOKEN, CreateClientData } from '../shared';
 import { ClientsService } from './clients.service';
 
 @Controller('clients')
@@ -36,6 +36,13 @@ export class ClientsController {
             .status(HttpStatus.CREATED)
             .headers({ location: `${path}/${createdClient.id}` })
             .send(createdClient);
+    }
+
+    @Post(':clientId/rotate-keys')
+    public async rotateKeys(@Res({ passthrough: true }) response: FastifyReply, @Param('clientId') clientId: string) {
+        await this.clientsService.rotateKeysForClient(clientId);
+
+        response.clearCookie(COOKIE_NAME_REFRESH_TOKEN).clearCookie(`${COOKIE_NAME_ACCESS_TOKEN}-${clientId}`);
     }
 
     @Get(':clientId')

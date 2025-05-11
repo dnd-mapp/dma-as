@@ -87,6 +87,10 @@ export class TokensService {
         await this.tokensRepository.removeAllBySub(userId);
     }
 
+    public async removeAllByAudience(audience: string) {
+        await this.tokensRepository.removeAllByAud(audience);
+    }
+
     private async generateToken(params: GenerateTokenParams) {
         const { audience, userId, tokenType, pti, key } = params;
         const metadata = this.constructTokenMetadata(audience, userId, tokenType, pti);

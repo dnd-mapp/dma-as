@@ -1,13 +1,15 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { KeysService } from '../keys';
 import { Client, CreateClientData } from '../shared';
+import { TokensService } from '../tokens';
 import { ClientsRepository } from './clients.repository';
 
 @Injectable()
 export class ClientsService {
     constructor(
         private readonly clientsRepository: ClientsRepository,
-        private readonly keysService: KeysService
+        private readonly keysService: KeysService,
+        private readonly tokensService: TokensService
     ) {}
 
     public async getAll() {
@@ -43,6 +45,14 @@ export class ClientsService {
 
     public async removeById(clientId: string) {
         await this.clientsRepository.removeById(clientId);
+    }
+
+    public async rotateKeysForClient(clientId: string) {
+        const client = await this.getById(clientId);
+
+        if (!client) throw new BadRequestException('Client does not exist');
+        await this.keysService.rotateKeysForClient(clientId);
+        await this.tokensService.removeAllByAudience(client.audience);
     }
 
     private async validateUniqueAudience(audience: string, message: string, clientId?: string) {

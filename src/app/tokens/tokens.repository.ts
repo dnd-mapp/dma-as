@@ -65,4 +65,8 @@ export class TokensRepository {
     public async removeAllBySub(userId: string) {
         await this.databaseService.token.deleteMany({ where: { sub: userId } });
     }
+
+    public async removeAllByAud(aud: string) {
+        await this.databaseService.token.deleteMany({ where: { aud: aud } });
+    }
 }
