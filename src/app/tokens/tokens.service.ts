@@ -66,25 +66,19 @@ export class TokensService {
         await this.tokensRepository.removeByJti(jti);
     }
 
-    public async removeRevokedToken(jti: string, pti?: string) {
-        let tokens: TokenMetadata[] = [];
+    public async revokeTokenLinage(jti: string) {
+        const tokens = await this.getChildByPti(jti);
 
-        if (pti) {
-            tokens = await this.tokensRepository.findAllByPti(pti);
-        }
-        if (tokens.length > 0) {
-            await Promise.all(
-                tokens.map((token) => {
-                    this.removeRevokedToken(token.jti, token.pti);
-                    this.removeByJti(token.jti);
-                })
-            );
-        }
-        await this.removeByJti(jti);
+        await Promise.all(
+            tokens.map((token) => {
+                if (!token.rvk) this.revokeByJti(token.jti);
+                this.revokeTokenLinage(token.jti);
+            })
+        );
     }
 
-    public async removeAllFromUser(userId: string) {
-        await this.tokensRepository.removeAllBySub(userId);
+    public async revokeAllFromUser(userId: string) {
+        await this.tokensRepository.revokeAllBySub(userId);
     }
 
     public async removeAllByAudience(audience: string) {
@@ -137,5 +131,13 @@ export class TokensService {
             ...(tokenType === TokenTypes.REFRESH ? { nbf: new Date(now.getTime() + REFRESH_TOKEN_NBF) } : {}),
             ...(pti ? { pti: pti } : {}),
         });
+    }
+
+    private async revokeByJti(jti: string) {
+        await this.tokensRepository.revokeByJti(jti);
+    }
+
+    private async getChildByPti(pti: string) {
+        return await this.tokensRepository.findAllByPti(pti);
     }
 }

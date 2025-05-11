@@ -72,7 +72,7 @@ export async function decodeToken(token: string, moduleRef: ModuleRef, logger: D
     }
     if (storedToken.rvk) {
         logger.warn(`Token not accepted - Reason: Token with ID "${decodedToken.payload.jti}" is revoked`);
-        await tokensService.removeRevokedToken(decodedToken.payload.jti, decodedToken.payload.pti);
+        await tokensService.revokeTokenLinage(decodedToken.payload.jti);
         throw new UnauthorizedException('Unauthorized');
     }
     return storedToken;
