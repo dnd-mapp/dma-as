@@ -28,7 +28,7 @@ model Authorization {
     codeChallenge     String   @map(name: "code_challenge")
     state             String
     redirectUrl       String   @map(name: "redirect_url")
-    userId            String?
+    userId            String?  @map(name: "user_id")
     createdAt         DateTime @updatedAt() @map(name: "created_at")
 
     user User? @relation(fields: [userId], references: [id], map: "fk_user_authorization")
@@ -65,7 +65,7 @@ model Key {
     publicKey  String?  @map(name: "public_key") @db.LongText
     privateKey String?  @map(name: "private_key") @db.LongText
     lastUsed   DateTime @default(now()) @map(name: "last_used")
-    clientId   String
+    clientId   String   @map(name: "client_id")
 
     client Client @relation(fields: [clientId], references: [id], map: "fk_client_keys", onDelete: Cascade)
 
@@ -84,7 +84,7 @@ model Client {
 
 model RedirectURL {
     url      String
-    clientId String
+    clientId String @map(name: "client_id")
 
     client Client @relation(fields: [clientId], references: [id], map: "fk_client_redirect_url", onDelete: Cascade)
 
