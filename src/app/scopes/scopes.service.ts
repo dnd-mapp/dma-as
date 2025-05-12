@@ -21,7 +21,11 @@ export class ScopesService {
     }
 
     public async update(data: Scope) {
-        await this.validateNameUnique(data.name, `Can't update Scope - Reason: Scope "${data.name}" already exists`);
+        await this.validateNameUnique(
+            data.name,
+            `Can't update Scope - Reason: Scope "${data.name}" already exists`,
+            data.id
+        );
 
         return await this.scopesRepository.update(data);
     }

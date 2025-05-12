@@ -21,7 +21,11 @@ export class RolesService {
     }
 
     public async update(data: Role) {
-        await this.validateNameUnique(data.name, `Can't update Role - Reason: Role "${data.name}" already exists`);
+        await this.validateNameUnique(
+            data.name,
+            `Can't update Role - Reason: Role "${data.name}" already exists`,
+            data.id
+        );
 
         return await this.rolesRepository.update(data);
     }
