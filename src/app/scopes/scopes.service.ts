@@ -1,10 +1,14 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { RolesService } from '../roles';
 import { CreateScopeData, Scope } from '../shared';
 import { ScopesRepository } from './scopes.repository';
 
 @Injectable()
 export class ScopesService {
-    constructor(private readonly scopesRepository: ScopesRepository) {}
+    constructor(
+        private readonly scopesRepository: ScopesRepository,
+        private readonly rolesService: RolesService
+    ) {}
 
     public async getAll() {
         return await this.scopesRepository.findAll();
@@ -16,6 +20,11 @@ export class ScopesService {
 
     public async create(data: CreateScopeData) {
         await this.validateNameUnique(data.name, `Can't create Scope - Reason: Scope "${data.name}" already exists`);
+        await Promise.all(
+            [...data.roles].map((role) =>
+                this.validateRoleExists(role.id, `Can't create Scope - Reason: Role with ID "${role.id}" was not found`)
+            )
+        );
 
         return await this.scopesRepository.create(data);
     }
@@ -25,6 +34,14 @@ export class ScopesService {
             data.name,
             `Can't update Scope - Reason: Scope "${data.name}" already exists`,
             data.id
+        );
+        await Promise.all(
+            [...data.roles].map((role) =>
+                this.validateRoleExists(
+                    role.id,
+                    `Can't update Scope with ID "${data.id}" - Reason: Role with ID "${role.id}" was not found`
+                )
+            )
         );
 
         return await this.scopesRepository.update(data);
@@ -45,5 +62,12 @@ export class ScopesService {
         const query = await this.getByName(scopeName);
 
         if (query && (!scopeId || scopeId !== query.id)) throw new BadRequestException(message);
+    }
+
+    private async validateRoleExists(roleId: string, message: string) {
+        const query = await this.rolesService.getById(roleId);
+
+        if (query) return;
+        throw new BadRequestException(message);
     }
 }
