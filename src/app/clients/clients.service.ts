@@ -56,10 +56,8 @@ export class ClientsService {
     }
 
     private async validateUniqueAudience(audience: string, message: string, clientId?: string) {
-        const client = await this.getByAudience(audience);
+        const query = await this.getByAudience(audience);
 
-        if (((clientId && client) || client) && client.id !== clientId) {
-            throw new BadRequestException(message);
-        }
+        if (query && (!clientId || clientId !== query.id)) throw new BadRequestException(message);
     }
 }

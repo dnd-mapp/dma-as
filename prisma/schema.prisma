@@ -28,7 +28,7 @@ model Authorization {
     codeChallenge     String   @map(name: "code_challenge")
     state             String
     redirectUrl       String   @map(name: "redirect_url")
-    userId            String?
+    userId            String?  @map(name: "user_id")
     createdAt         DateTime @updatedAt() @map(name: "created_at")
 
     user User? @relation(fields: [userId], references: [id], map: "fk_user_authorization")
@@ -65,7 +65,7 @@ model Key {
     publicKey  String?  @map(name: "public_key") @db.LongText
     privateKey String?  @map(name: "private_key") @db.LongText
     lastUsed   DateTime @default(now()) @map(name: "last_used")
-    clientId   String
+    clientId   String   @map(name: "client_id")
 
     client Client @relation(fields: [clientId], references: [id], map: "fk_client_keys", onDelete: Cascade)
 
@@ -84,10 +84,39 @@ model Client {
 
 model RedirectURL {
     url      String
-    clientId String
+    clientId String @map(name: "client_id")
 
     client Client @relation(fields: [clientId], references: [id], map: "fk_client_redirect_url", onDelete: Cascade)
 
     @@id(fields: [url, clientId])
     @@map(name: "redirect_urls")
+}
+
+model Role {
+    id   String @id() @default(nanoid())
+    name String @unique(map: "uq_role_name")
+
+    scopes RoleScope[]
+
+    @@map(name: "role")
+}
+
+model Scope {
+    id   String @id() @default(nanoid())
+    name String @unique(map: "uq_scope_name")
+
+    roles RoleScope[]
+
+    @@map(name: "scope")
+}
+
+model RoleScope {
+    roleId  String @map(name: "role_id")
+    scopeId String @map(name: "scope_id")
+
+    role  Role  @relation(fields: [roleId], references: [id], map: "fk_role_scope", onDelete: Cascade)
+    scope Scope @relation(fields: [scopeId], references: [id], map: "fk_scope_role", onDelete: Cascade)
+
+    @@id(fields: [roleId, scopeId], name: "pk_role_scope")
+    @@map(name: "role_scope")
 }

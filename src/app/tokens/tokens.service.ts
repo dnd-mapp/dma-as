@@ -24,7 +24,7 @@ export class TokensService implements OnModuleInit {
         private readonly keysService: KeysService,
         private readonly tokensRepository: TokensRepository
     ) {
-        this.logger.setContext('TokensRepository');
+        this.logger.setContext('TokensService');
     }
 
     public async onModuleInit() {
