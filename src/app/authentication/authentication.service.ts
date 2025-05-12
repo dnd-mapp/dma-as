@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
+import { Cron } from '@nestjs/schedule';
 import { compare } from 'bcryptjs';
 import { ClientsService } from '../clients';
 import { DmaLogger } from '../logging';
@@ -87,6 +88,12 @@ export class AuthenticationService {
         this.logger.log(`Change password successfully for User with ID "${user.id}"`);
     }
 
+    // Runs every 5 minutes past the whole hour, e.g. 12:05, 13:05, 14:05, etc.
+    @Cron('0 5 * * * *')
+    protected async removeExpiredAuthorizationCodes() {
+        await this.authorizationRepository.removeExpiredAuthorizationCodes();
+    }
+
     private async comparePassword(password: string, hash: string) {
         if (!hash) return false;
         return await compare(password, hash);
@@ -102,7 +109,7 @@ export class AuthenticationService {
         } = await this.authorizationRepository.getAuthorizationByAuthorizationCode(authorizationCode);
 
         if (!this.validateTimespan(Date.now(), createdAt)) {
-            await this.authorizationRepository.remove(storedAuthorizationCode);
+            await this.authorizationRepository.removeByAuthorizationCode(storedAuthorizationCode);
             this.logger.warn('Request for tokens failed - Reason: Authorization Code has expired');
             throw new BadRequestException('Authorization request took too long');
         }
@@ -120,7 +127,7 @@ export class AuthenticationService {
             this.logger.warn('Request for tokens failed - Reason: Invalid redirect URL');
             throw new BadRequestException('Invalid redirect URL');
         }
-        await this.authorizationRepository.remove(authorizationCode);
+        await this.authorizationRepository.removeByAuthorizationCode(authorizationCode);
 
         this.logger.log(`Request for tokens succeeded. Creating tokens for User with ID "${userId}"`);
 

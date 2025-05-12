@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
 import { DatabaseService } from '../database';
-import { Authorization, AuthorizeRequest } from '../shared';
+import { Authorization, AuthorizeRequest, MAX_AUTHORIZATION_CODE_LIFETIME } from '../shared';
 
 @Injectable()
 export class AuthorizationRepository {
@@ -33,7 +33,21 @@ export class AuthorizationRepository {
             })
         );
 
-    public async remove(authorizationCode: string) {
+    public async removeByAuthorizationCode(authorizationCode: string) {
         await this.databaseService.authorization.delete({ where: { authorizationCode: authorizationCode } });
     }
+
+    public async removeExpiredAuthorizationCodes() {
+        const tokens = await this.findAll();
+        const now = Date.now();
+
+        await Promise.all(
+            tokens.map(({ createdAt, authorizationCode }) => {
+                if (new Date(createdAt.getTime() + MAX_AUTHORIZATION_CODE_LIFETIME).getTime() < now) return;
+                this.removeByAuthorizationCode(authorizationCode);
+            })
+        );
+    }
+
+    private findAll = async () => plainToInstance(Authorization, await this.databaseService.authorization.findMany());
 }
