@@ -1,6 +1,7 @@
 import {
     BadRequestException,
     Body,
+    ClassSerializerInterceptor,
     Controller,
     Delete,
     Get,
@@ -11,12 +12,17 @@ import {
     Put,
     Req,
     Res,
+    UseGuards,
+    UseInterceptors,
 } from '@nestjs/common';
 import { FastifyReply, FastifyRequest } from 'fastify';
+import { AuthenticationGuard } from '../authentication';
 import { CreateRoleData, Role } from '../shared';
 import { RolesService } from './roles.service';
 
 @Controller('roles')
+@UseInterceptors(ClassSerializerInterceptor)
+@UseGuards(AuthenticationGuard)
 export class RolesController {
     constructor(private readonly rolesService: RolesService) {}
 

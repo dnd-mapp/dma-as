@@ -1,6 +1,7 @@
 import {
     BadRequestException,
     Body,
+    ClassSerializerInterceptor,
     Controller,
     Delete,
     Get,
@@ -11,12 +12,17 @@ import {
     Put,
     Req,
     Res,
+    UseGuards,
+    UseInterceptors,
 } from '@nestjs/common';
 import { FastifyReply, FastifyRequest } from 'fastify';
+import { AuthenticationGuard } from '../authentication';
 import { CreateScopeData, Scope } from '../shared';
 import { ScopesService } from './scopes.service';
 
 @Controller('scopes')
+@UseInterceptors(ClassSerializerInterceptor)
+@UseGuards(AuthenticationGuard)
 export class ScopesController {
     constructor(private readonly scopesService: ScopesService) {}
 
