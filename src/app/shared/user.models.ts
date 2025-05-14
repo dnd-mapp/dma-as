@@ -1,6 +1,7 @@
 import { OmitType } from '@nestjs/mapped-types';
-import { Exclude } from 'class-transformer';
-import { IsNotEmpty, IsString, MinLength } from 'class-validator';
+import { Exclude, Type } from 'class-transformer';
+import { IsArray, IsNotEmpty, IsString, MinLength, ValidateNested } from 'class-validator';
+import { Role } from './role.models';
 
 export class User {
     @IsString()
@@ -16,6 +17,11 @@ export class User {
     @MinLength(12)
     @Exclude({ toPlainOnly: true })
     public password: string;
+
+    @ValidateNested()
+    @IsArray()
+    @Type(() => Role)
+    public roles: Set<Role>;
 }
 
 export class CreateUserData extends OmitType(User, ['id'] as const) {}

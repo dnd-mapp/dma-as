@@ -4,11 +4,13 @@ import { Cron } from '@nestjs/schedule';
 import { compare } from 'bcryptjs';
 import { ClientsService } from '../clients';
 import { DmaLogger } from '../logging';
+import { RolesService } from '../roles';
 import {
     AuthorizeRequest,
     ChangePasswordData,
     LoginData,
     MAX_AUTHORIZATION_CODE_LIFETIME,
+    Roles,
     SignUpData,
     TokenRequestData,
     TokenTypes,
@@ -25,16 +27,19 @@ export class AuthenticationService {
     constructor(
         private readonly moduleRef: ModuleRef,
         private readonly logger: DmaLogger,
+        private readonly authorizationRepository: AuthorizationRepository,
         private readonly usersService: UsersService,
         private readonly tokensService: TokensService,
         private readonly clientsService: ClientsService,
-        private readonly authorizationRepository: AuthorizationRepository
+        private readonly rolesService: RolesService
     ) {
         this.logger.setContext('AuthenticationService');
     }
 
     public async signUp(signUpData: SignUpData) {
-        const createdUser = await this.usersService.create(signUpData);
+        const userRole = await this.rolesService.getByName(Roles.USER);
+
+        const createdUser = await this.usersService.create({ ...signUpData, roles: new Set([userRole]) });
         this.logger.log(`User account created successfully for username "${createdUser.username}"`);
 
         return createdUser;

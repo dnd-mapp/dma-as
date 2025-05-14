@@ -1,7 +1,15 @@
 import { OmitType } from '@nestjs/mapped-types';
 import { Type } from 'class-transformer';
-import { IsNotEmpty, IsString, MinLength, ValidateNested } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsString, MinLength, ValidateNested } from 'class-validator';
 import { ScopeNoRoles } from './scope.models';
+
+export const Roles = {
+    USER: 'User',
+    ADMIN: 'Admin',
+    DUNGEON_MASTER: 'Dungeon Master',
+} as const;
+
+export type RoleName = (typeof Roles)[keyof typeof Roles];
 
 export class Role {
     @IsString()
@@ -9,9 +17,10 @@ export class Role {
     public id: string;
 
     @IsString()
+    @IsEnum(Roles)
     @MinLength(3)
     @IsNotEmpty()
-    public name: string;
+    public name: RoleName;
 
     @ValidateNested()
     @Type(() => ScopeNoRoles)
