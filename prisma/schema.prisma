@@ -19,6 +19,7 @@ model User {
 
     authorizations Authorization[]
     tokens         Token[]
+    roles          UserRole[]
 
     @@map(name: "users")
 }
@@ -97,6 +98,7 @@ model Role {
     name String @unique(map: "uq_role_name")
 
     scopes RoleScope[]
+    users  UserRole[]
 
     @@map(name: "role")
 }
@@ -119,4 +121,15 @@ model RoleScope {
 
     @@id(fields: [roleId, scopeId], name: "pk_role_scope")
     @@map(name: "role_scope")
+}
+
+model UserRole {
+    roleId String @map(name: "role_id")
+    userId String @map(name: "user_id")
+
+    role Role @relation(fields: [roleId], references: [id], map: "fk_role_user", onDelete: Cascade)
+    user User @relation(fields: [userId], references: [id], map: "fk_user_role", onDelete: Cascade)
+
+    @@id(fields: [roleId, userId], name: "pk_user_role")
+    @@map(name: "user_role")
 }

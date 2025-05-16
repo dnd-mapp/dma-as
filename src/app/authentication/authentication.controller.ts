@@ -2,7 +2,6 @@ import {
     Body,
     ClassSerializerInterceptor,
     Controller,
-    HttpCode,
     HttpStatus,
     Post,
     Req,
@@ -13,18 +12,21 @@ import {
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { DmaLogger } from '../logging';
 import {
+    AuthenticationGuard,
     AuthorizeRequest,
     ChangePasswordData,
     CLIENT_ID_HEADER,
     COOKIE_NAME_ACCESS_TOKEN,
     COOKIE_NAME_REFRESH_TOKEN,
+    HasScope,
     LoginData,
+    retrieveSignedCookieValue,
+    ScopeGuard,
+    ScopeNames,
     SignUpData,
     TokenRequestData,
 } from '../shared';
-import { AuthenticationGuard } from './authentication.guard';
 import { AuthenticationService } from './authentication.service';
-import { retrieveSignedCookieValue } from './functions';
 
 @Controller()
 @UseInterceptors(ClassSerializerInterceptor)
@@ -74,7 +76,11 @@ export class AuthenticationController {
         @Req() request: FastifyRequest,
         @Res({ passthrough: true }) response: FastifyReply
     ) {
-        const receivedRefreshToken = retrieveSignedCookieValue(request, COOKIE_NAME_REFRESH_TOKEN, this.logger);
+        let receivedRefreshToken: string = null;
+
+        if (data.useRefreshToken) {
+            receivedRefreshToken = retrieveSignedCookieValue(request, COOKIE_NAME_REFRESH_TOKEN, this.logger);
+        }
         const { tokens, clientId } = await this.authenticationService.requestToken(data, receivedRefreshToken);
 
         response
@@ -90,9 +96,9 @@ export class AuthenticationController {
             });
     }
 
+    @UseGuards(AuthenticationGuard, ScopeGuard)
+    @HasScope(ScopeNames.CHANGE_PASSWORD)
     @Post('/change-password')
-    @HttpCode(HttpStatus.OK)
-    @UseGuards(AuthenticationGuard)
     public async changePassword(
         @Body() data: ChangePasswordData,
         @Req() request: FastifyRequest,
@@ -101,6 +107,6 @@ export class AuthenticationController {
         this.logger.log(`Change password initiated for username "${request.authenticatedUser.username}"`);
         await this.authenticationService.changePassword(data, request.authenticatedUser);
 
-        response.clearCookie(COOKIE_NAME_ACCESS_TOKEN).clearCookie(COOKIE_NAME_REFRESH_TOKEN);
+        response.status(HttpStatus.OK).clearCookie(COOKIE_NAME_ACCESS_TOKEN).clearCookie(COOKIE_NAME_REFRESH_TOKEN);
     }
 }

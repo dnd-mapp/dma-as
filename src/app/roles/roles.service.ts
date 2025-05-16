@@ -14,6 +14,10 @@ export class RolesService {
         return await this.rolesRepository.findOneById(roleId);
     }
 
+    public async getByName(roleName: string) {
+        return await this.rolesRepository.findOneByName(roleName);
+    }
+
     public async create(data: CreateRoleData) {
         await this.validateNameUnique(data.name, `Can't create Role - Reason: Role "${data.name}" already exists`);
 
@@ -35,10 +39,6 @@ export class RolesService {
             throw new NotFoundException(`Can't remove Role - Reason: Role with ID "${roleId}" was not found`);
         }
         await this.rolesRepository.removeById(roleId);
-    }
-
-    private async getByName(roleName: string) {
-        return await this.rolesRepository.findOneByName(roleName);
     }
 
     private async validateNameUnique(roleName: string, message: string, roleId?: string) {

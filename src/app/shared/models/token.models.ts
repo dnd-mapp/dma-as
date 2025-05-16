@@ -1,5 +1,6 @@
 import { Type } from 'class-transformer';
 import { JWK } from 'node-jose';
+import { ScopeName } from './scope.models';
 import { User } from './user.models';
 
 /** Expiration time of the access token in ms, which is currently set at fifteen minutes. */
@@ -29,6 +30,7 @@ export class TokenMetadata {
     iat: Date;
     exp: Date;
     nbf?: Date;
+    scopes: ScopeName[];
 
     @Type(() => User)
     user: User;
@@ -48,6 +50,7 @@ export interface DecodedToken {
         iat: number;
         nbf?: number;
         exp: number;
+        scope: string;
     };
     signature: string;
 }
@@ -57,5 +60,6 @@ export interface GenerateTokenParams {
     key: JWK.Key;
     userId: string;
     tokenType: TokenType;
+    scope: string;
     pti?: string;
 }
