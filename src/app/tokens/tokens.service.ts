@@ -14,6 +14,7 @@ import {
     TokenType,
     TokenTypes,
 } from '../shared';
+import { UsersService } from '../users';
 import { TokensRepository } from './tokens.repository';
 
 @Injectable()
@@ -22,6 +23,7 @@ export class TokensService implements OnModuleInit {
         private readonly jwtService: JwtService,
         private readonly logger: DmaLogger,
         private readonly keysService: KeysService,
+        private readonly usersService: UsersService,
         private readonly tokensRepository: TokensRepository
     ) {
         this.logger.setContext('TokensService');
@@ -41,11 +43,13 @@ export class TokensService implements OnModuleInit {
 
     public async generateTokens(client: Client, userId: string, pti?: string) {
         const key = await this.keysService.getKeysByClientId(client.id);
+        const user = await this.usersService.getById(userId);
 
         const params = {
-            userId: userId,
+            userId: user.id,
             pti: pti,
             key: key,
+            scope: user.getAllRoleScopes(),
         };
         const accessToken = await this.generateToken({
             ...params,
@@ -99,7 +103,7 @@ export class TokensService implements OnModuleInit {
     }
 
     private async generateToken(params: GenerateTokenParams) {
-        const { audience, userId, tokenType, pti, key } = params;
+        const { audience, userId, tokenType, pti, key, scope } = params;
         const metadata = this.constructTokenMetadata(audience, userId, tokenType, pti);
 
         const tokenMetadata = await this.tokensRepository.create(metadata);
@@ -109,6 +113,7 @@ export class TokensService implements OnModuleInit {
                 {
                     jti: tokenMetadata.jti,
                     sub: tokenMetadata.sub,
+                    scope: scope,
                     iss: tokenMetadata.iss,
                     iat: Number.parseInt(`${tokenMetadata.iat.getTime() / 1000}`),
                     exp: Number.parseInt(`${tokenMetadata.exp.getTime() / 1000}`),
