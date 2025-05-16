@@ -76,7 +76,11 @@ export class AuthenticationController {
         @Req() request: FastifyRequest,
         @Res({ passthrough: true }) response: FastifyReply
     ) {
-        const receivedRefreshToken = retrieveSignedCookieValue(request, COOKIE_NAME_REFRESH_TOKEN, this.logger);
+        let receivedRefreshToken: string = null;
+
+        if (data.useRefreshToken) {
+            receivedRefreshToken = retrieveSignedCookieValue(request, COOKIE_NAME_REFRESH_TOKEN, this.logger);
+        }
         const { tokens, clientId } = await this.authenticationService.requestToken(data, receivedRefreshToken);
 
         response
