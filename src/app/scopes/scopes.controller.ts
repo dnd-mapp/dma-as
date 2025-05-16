@@ -21,15 +21,17 @@ import { ScopesService } from './scopes.service';
 
 @Controller('scopes')
 @UseInterceptors(ClassSerializerInterceptor)
-@UseGuards(AuthenticationGuard)
+@UseGuards(AuthenticationGuard, RoleGuard)
 export class ScopesController {
     constructor(private readonly scopesService: ScopesService) {}
 
+    @HasRole(Roles.ADMIN)
     @Get()
     public async getAll() {
         return await this.scopesService.getAll();
     }
 
+    @HasRole(Roles.ADMIN)
     @Post()
     public async create(@Body() data: CreateScopeData, @Res({ passthrough: true }) response: FastifyReply) {
         const scope = await this.scopesService.create(data);
@@ -40,6 +42,7 @@ export class ScopesController {
             .send(scope);
     }
 
+    @HasRole(Roles.ADMIN)
     @Get(':scopeId')
     public async getById(@Param('scopeId') scopeIdParam: string) {
         const scope = await this.scopesService.getById(scopeIdParam);
@@ -48,6 +51,7 @@ export class ScopesController {
         return scope;
     }
 
+    @HasRole(Roles.ADMIN)
     @Put(':scopeId')
     public async update(@Param('scopeId') scopeIdParam: string, @Body() data: Scope, @Req() request: FastifyRequest) {
         if (scopeIdParam !== data.id) {
@@ -58,6 +62,7 @@ export class ScopesController {
         return await this.scopesService.update(data);
     }
 
+    @HasRole(Roles.ADMIN)
     @Delete(':scopeId')
     public async remove(@Param('scopeId') scopeIdParam: string) {
         await this.scopesService.removeById(scopeIdParam);

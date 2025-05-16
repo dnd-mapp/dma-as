@@ -25,11 +25,13 @@ import { RolesService } from './roles.service';
 export class RolesController {
     constructor(private readonly rolesService: RolesService) {}
 
+    @HasRole(Roles.ADMIN)
     @Get()
     public async getAll() {
         return await this.rolesService.getAll();
     }
 
+    @HasRole(Roles.ADMIN)
     @Post()
     public async create(@Body() data: CreateRoleData, @Res({ passthrough: true }) response: FastifyReply) {
         const role = await this.rolesService.create(data);
@@ -40,6 +42,7 @@ export class RolesController {
             .send(role);
     }
 
+    @HasRole(Roles.ADMIN)
     @Get(':roleId')
     public async getById(@Param('roleId') roleIdParam: string) {
         const role = await this.rolesService.getById(roleIdParam);
@@ -48,6 +51,7 @@ export class RolesController {
         return role;
     }
 
+    @HasRole(Roles.ADMIN)
     @Put(':roleId')
     public async update(@Param('roleId') roleIdParam: string, @Body() data: Role, @Req() request: FastifyRequest) {
         if (roleIdParam !== data.id) {
@@ -58,6 +62,7 @@ export class RolesController {
         return await this.rolesService.update(data);
     }
 
+    @HasRole(Roles.ADMIN)
     @Delete(':roleId')
     public async remove(@Param('roleId') roleIdParam: string) {
         await this.rolesService.removeById(roleIdParam);

@@ -2,7 +2,6 @@ import {
     Body,
     ClassSerializerInterceptor,
     Controller,
-    HttpCode,
     HttpStatus,
     Post,
     Req,
@@ -93,9 +92,9 @@ export class AuthenticationController {
             });
     }
 
+    @UseGuards(AuthenticationGuard, ScopeGuard)
+    @HasScope(ScopeNames.CHANGE_PASSWORD)
     @Post('/change-password')
-    @HttpCode(HttpStatus.OK)
-    @UseGuards(AuthenticationGuard)
     public async changePassword(
         @Body() data: ChangePasswordData,
         @Req() request: FastifyRequest,
@@ -104,6 +103,6 @@ export class AuthenticationController {
         this.logger.log(`Change password initiated for username "${request.authenticatedUser.username}"`);
         await this.authenticationService.changePassword(data, request.authenticatedUser);
 
-        response.clearCookie(COOKIE_NAME_ACCESS_TOKEN).clearCookie(COOKIE_NAME_REFRESH_TOKEN);
+        response.status(HttpStatus.OK).clearCookie(COOKIE_NAME_ACCESS_TOKEN).clearCookie(COOKIE_NAME_REFRESH_TOKEN);
     }
 }

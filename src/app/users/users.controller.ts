@@ -19,7 +19,7 @@ import { DmaLogger } from '../logging';
 import { AuthenticationGuard, CreateUserData, HasRole, RoleGuard, Roles, UpdateUserData, User } from '../shared';
 import { UsersService } from './users.service';
 
-@UseGuards(AuthenticationGuard)
+@UseGuards(AuthenticationGuard, RoleGuard)
 @UseInterceptors(ClassSerializerInterceptor)
 @Controller('users')
 export class UsersController {
@@ -30,18 +30,21 @@ export class UsersController {
         this.logger.setContext('UsersController');
     }
 
+    @HasRole(Roles.USER)
     @Get()
     public async getAll() {
         this.logger.log('Getting all Users');
         return await this.usersService.getAll();
     }
 
+    @HasRole(Roles.ADMIN)
     @Post()
     public async create(@Body() userData: CreateUserData) {
         this.logger.log('Creating a new user');
         return await this.usersService.create(userData);
     }
 
+    @HasRole(Roles.USER)
     @Get('/:id')
     public async getById(@Param('id') userIdParam: string) {
         this.logger.log(`Getting user with ID "${userIdParam}"`);
@@ -51,6 +54,7 @@ export class UsersController {
         return query;
     }
 
+    @HasRole(Roles.USER)
     @Put('/:id')
     public async update(
         @Param('id') userIdParam: string,
@@ -68,6 +72,7 @@ export class UsersController {
         return await this.usersService.update(userData);
     }
 
+    @HasRole(Roles.ADMIN)
     @Delete('/:id')
     public async removeById(@Param('id') userIdParam: string, @Req() request: FastifyRequest) {
         this.validateResourceOwner(userIdParam, request.authenticatedUser);
