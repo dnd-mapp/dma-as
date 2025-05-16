@@ -38,21 +38,27 @@ export class UsersRepository {
     public findAll = async () =>
         plainToInstance(
             User,
-            await this.databaseService.user.findMany({
-                ...selectedUserAttributes,
-            })
+            transformAllUserRoles(
+                await this.databaseService.user.findMany({
+                    ...selectedUserAttributes,
+                })
+            )
         );
 
     public findOneById = async (userId: string) =>
         plainToInstance(
             User,
-            await this.databaseService.user.findFirst({ ...selectedUserAttributes, where: { id: userId } })
+            transformUserRoles(
+                await this.databaseService.user.findFirst({ ...selectedUserAttributes, where: { id: userId } })
+            )
         );
 
     public findOneByUsername = async (username: string) =>
         plainToInstance(
             User,
-            await this.databaseService.user.findFirst({ ...selectedUserAttributes, where: { username: username } })
+            transformUserRoles(
+                await this.databaseService.user.findFirst({ ...selectedUserAttributes, where: { username: username } })
+            )
         );
 
     public async update(data: UpdateUserData) {
@@ -60,58 +66,66 @@ export class UsersRepository {
 
         return plainToInstance(
             User,
-            await this.databaseService.user.update({
-                ...selectedUserAttributes,
-                where: { id: data.id },
-                data: {
-                    id: data.id,
-                    username: data.username,
-                    roles: {
-                        deleteMany: [...currentRoles]
-                            .filter((oldRole) => ![...data.roles].some((newRole) => oldRole.id === newRole.id))
-                            .map((removedRole) => ({
-                                roleId: removedRole.id,
-                                userId: data.id,
-                            })),
-                        createMany: {
-                            data: [...data.roles]
-                                .filter((newRole) => ![...currentRoles].some((oldRole) => newRole.id === oldRole.id))
-                                .map((addedRole) => ({
-                                    roleId: addedRole.id,
+            transformUserRoles(
+                await this.databaseService.user.update({
+                    ...selectedUserAttributes,
+                    where: { id: data.id },
+                    data: {
+                        id: data.id,
+                        username: data.username,
+                        roles: {
+                            deleteMany: [...currentRoles]
+                                .filter((oldRole) => ![...data.roles].some((newRole) => oldRole.id === newRole.id))
+                                .map((removedRole) => ({
+                                    roleId: removedRole.id,
                                     userId: data.id,
                                 })),
+                            createMany: {
+                                data: [...data.roles]
+                                    .filter(
+                                        (newRole) => ![...currentRoles].some((oldRole) => newRole.id === oldRole.id)
+                                    )
+                                    .map((addedRole) => ({
+                                        roleId: addedRole.id,
+                                        userId: data.id,
+                                    })),
+                            },
                         },
                     },
-                },
-            })
+                })
+            )
         );
     }
 
     public updatePassword = async (data: User) =>
         plainToInstance(
             User,
-            await this.databaseService.user.update({
-                ...selectedUserAttributes,
-                where: { id: data.id },
-                data: { password: data.password },
-            })
+            transformUserRoles(
+                await this.databaseService.user.update({
+                    ...selectedUserAttributes,
+                    where: { id: data.id },
+                    data: { password: data.password },
+                })
+            )
         );
 
     public create = async (data: CreateUserData) =>
         plainToInstance(
             User,
-            await this.databaseService.user.create({
-                ...selectedUserAttributes,
-                data: {
-                    username: data.username,
-                    password: data.password,
-                    roles: {
-                        createMany: {
-                            data: [...data.roles].map(({ id }) => ({ roleId: id })),
+            transformUserRoles(
+                await this.databaseService.user.create({
+                    ...selectedUserAttributes,
+                    data: {
+                        username: data.username,
+                        password: data.password,
+                        roles: {
+                            createMany: {
+                                data: [...data.roles].map(({ id }) => ({ roleId: id })),
+                            },
                         },
                     },
-                },
-            })
+                })
+            )
         );
 
     public async removeById(userId: string) {
