@@ -4,8 +4,15 @@ import { JwtService } from '@nestjs/jwt';
 import { FastifyRequest } from 'fastify';
 import { KeysService } from '../keys';
 import { DmaLogger } from '../logging';
-import { DecodedToken } from '../shared';
 import { TokensService } from '../tokens';
+import { DecodedToken, scopeToScopes } from './models';
+
+interface ValidateCookieParams {
+    request: FastifyRequest;
+    cookieName: string;
+    moduleRef: ModuleRef;
+    logger: DmaLogger;
+}
 
 export function retrieveSignedCookieValue(request: FastifyRequest, cookieName: string, logger: DmaLogger) {
     const cookie = request.cookies[cookieName];
@@ -65,6 +72,7 @@ export async function decodeToken(token: string, moduleRef: ModuleRef, logger: D
         throw new UnauthorizedException('Unauthorized');
     }
     const storedToken = await tokensService.getById(decodedToken.payload.jti);
+    storedToken.scopes = scopeToScopes(decodedToken.payload.scope);
 
     if (!storedToken) {
         logger.warn(`Token not accepted - Reason: Token with ID "${decodedToken.payload.jti}" does not exist`);
@@ -76,13 +84,6 @@ export async function decodeToken(token: string, moduleRef: ModuleRef, logger: D
         throw new UnauthorizedException('Unauthorized');
     }
     return storedToken;
-}
-
-interface ValidateCookieParams {
-    request: FastifyRequest;
-    cookieName: string;
-    moduleRef: ModuleRef;
-    logger: DmaLogger;
 }
 
 export async function validateCookie(params: ValidateCookieParams) {

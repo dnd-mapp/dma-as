@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
 import { DatabaseService } from '../database';
-import { TokenMetadata } from '../shared';
+import { TokenMetadata, transformUserRoles } from '../shared';
 
 @Injectable()
 export class TokensRepository {

@@ -1,9 +1,9 @@
 import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { FastifyRequest } from 'fastify';
-import { DmaLogger } from '../logging';
-import { CLIENT_ID_HEADER, COOKIE_NAME_ACCESS_TOKEN, TokenTypes } from '../shared';
-import { validateCookie } from './functions';
+import { DmaLogger } from '../../logging';
+import { validateCookie } from '../functions';
+import { CLIENT_ID_HEADER, COOKIE_NAME_ACCESS_TOKEN, TokenTypes } from '../models';
 
 @Injectable()
 export class AuthenticationGuard implements CanActivate {
@@ -29,6 +29,7 @@ export class AuthenticationGuard implements CanActivate {
             this.logger.warn('Token not accepted - Reason: Invalid token type');
             throw new UnauthorizedException('Unauthorized');
         }
+        request.scopes = decodedToken.scopes;
         request.authenticatedUser = decodedToken.user;
         return true;
     }

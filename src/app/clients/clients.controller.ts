@@ -13,8 +13,16 @@ import {
     UseGuards,
 } from '@nestjs/common';
 import { FastifyReply, FastifyRequest } from 'fastify';
-import { AuthenticationGuard } from '../authentication';
-import { Client, COOKIE_NAME_ACCESS_TOKEN, COOKIE_NAME_REFRESH_TOKEN, CreateClientData } from '../shared';
+import {
+    AuthenticationGuard,
+    Client,
+    COOKIE_NAME_ACCESS_TOKEN,
+    COOKIE_NAME_REFRESH_TOKEN,
+    CreateClientData,
+    HasRole,
+    RoleGuard,
+    Roles,
+} from '../shared';
 import { ClientsService } from './clients.service';
 
 @Controller('clients')

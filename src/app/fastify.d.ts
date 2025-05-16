@@ -1,8 +1,9 @@
 import 'fastify';
-import { User } from './shared';
+import { ScopeName, User } from './shared';
 
 declare module 'fastify' {
     interface FastifyRequest {
         authenticatedUser?: User;
+        scopes?: ScopeName[];
     }
 }

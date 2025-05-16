@@ -8,6 +8,7 @@ import { RolesService } from '../roles';
 import {
     AuthorizeRequest,
     ChangePasswordData,
+    decodeToken,
     LoginData,
     MAX_AUTHORIZATION_CODE_LIFETIME,
     Roles,
@@ -20,7 +21,6 @@ import { TokensService } from '../tokens';
 import { UsersService } from '../users';
 import { hashPassword, valueToBase64, valueToSHA256 } from '../utils';
 import { AuthorizationRepository } from './authorization.repository';
-import { decodeToken } from './functions';
 
 @Injectable()
 export class AuthenticationService {

@@ -13,18 +13,21 @@ import {
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { DmaLogger } from '../logging';
 import {
+    AuthenticationGuard,
     AuthorizeRequest,
     ChangePasswordData,
     CLIENT_ID_HEADER,
     COOKIE_NAME_ACCESS_TOKEN,
     COOKIE_NAME_REFRESH_TOKEN,
+    HasScope,
     LoginData,
+    retrieveSignedCookieValue,
+    ScopeGuard,
+    ScopeNames,
     SignUpData,
     TokenRequestData,
 } from '../shared';
-import { AuthenticationGuard } from './authentication.guard';
 import { AuthenticationService } from './authentication.service';
-import { retrieveSignedCookieValue } from './functions';
 
 @Controller()
 @UseInterceptors(ClassSerializerInterceptor)

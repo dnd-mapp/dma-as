@@ -16,8 +16,7 @@ import {
     UseInterceptors,
 } from '@nestjs/common';
 import { FastifyReply, FastifyRequest } from 'fastify';
-import { AuthenticationGuard } from '../authentication';
-import { CreateScopeData, Scope } from '../shared';
+import { AuthenticationGuard, CreateScopeData, HasRole, RoleGuard, Roles, Scope } from '../shared';
 import { ScopesService } from './scopes.service';
 
 @Controller('scopes')

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
 import { DatabaseService } from '../database';
-import { CreateUserData, UpdateUserData, User } from '../shared';
+import { CreateUserData, transformAllUserRoles, transformUserRoles, UpdateUserData, User } from '../shared';
 
 const selectedUserAttributes = {
     select: {
