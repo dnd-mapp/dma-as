@@ -8,6 +8,7 @@ const selectedUserAttributes = {
         id: true,
         username: true,
         password: true,
+        passwordExpiry: true,
         roles: {
             select: {
                 role: {
@@ -73,6 +74,7 @@ export class UsersRepository {
                     data: {
                         id: data.id,
                         username: data.username,
+                        passwordExpiry: data.passwordExpiry,
                         roles: {
                             deleteMany: [...currentRoles]
                                 .filter((oldRole) => ![...data.roles].some((newRole) => oldRole.id === newRole.id))
@@ -118,6 +120,7 @@ export class UsersRepository {
                     data: {
                         username: data.username,
                         password: data.password,
+                        passwordExpiry: data.passwordExpiry,
                         roles: {
                             createMany: {
                                 data: [...data.roles].map(({ id }) => ({ roleId: id })),

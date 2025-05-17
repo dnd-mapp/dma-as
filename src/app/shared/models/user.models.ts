@@ -1,6 +1,6 @@
 import { PickType } from '@nestjs/mapped-types';
 import { Exclude, Type } from 'class-transformer';
-import { IsArray, IsNotEmpty, IsString, MinLength, ValidateNested } from 'class-validator';
+import { IsArray, IsDate, IsNotEmpty, IsOptional, IsString, MinLength, ValidateNested } from 'class-validator';
 import { Role, RoleName, transformAllRoleScopes } from './role.models';
 
 export class User {
@@ -18,6 +18,10 @@ export class User {
     @Exclude({ toPlainOnly: true })
     public password: string;
 
+    @IsDate()
+    @IsOptional()
+    public passwordExpiry?: Date;
+
     @ValidateNested()
     @IsArray()
     @Type(() => Role)
@@ -32,9 +36,9 @@ export class User {
     }
 }
 
-export class CreateUserData extends PickType(User, ['username', 'password', 'roles'] as const) {}
+export class CreateUserData extends PickType(User, ['username', 'password', 'roles', 'passwordExpiry'] as const) {}
 
-export class UpdateUserData extends PickType(User, ['id', 'username', 'roles'] as const) {}
+export class UpdateUserData extends PickType(User, ['id', 'username', 'roles', 'passwordExpiry'] as const) {}
 
 export function transformAllUserRoles<T = unknown>(data: T[]) {
     return data.map((user) => transformUserRoles(user));
