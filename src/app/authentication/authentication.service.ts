@@ -87,6 +87,9 @@ export class AuthenticationService {
         }
         user.password = await hashPassword(data.newPassword);
 
+        if (user.passwordExpiry) {
+            user.passwordExpiry = data.passwordExpiry ?? null;
+        }
         await this.usersService.updatePassword(user);
         await this.tokensService.revokeAllFromUser(user.id);
 

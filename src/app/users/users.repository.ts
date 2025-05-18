@@ -106,7 +106,10 @@ export class UsersRepository {
                 await this.databaseService.user.update({
                     ...selectedUserAttributes,
                     where: { id: data.id },
-                    data: { password: data.password },
+                    data: {
+                        password: data.password,
+                        passwordExpiry: data.passwordExpiry,
+                    },
                 })
             )
         );
