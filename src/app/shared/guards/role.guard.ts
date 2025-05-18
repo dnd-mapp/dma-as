@@ -10,7 +10,8 @@ export class RoleGuard implements CanActivate {
     public canActivate(context: ExecutionContext) {
         const request = context.switchToHttp().getRequest<FastifyRequest>();
         const requestedRole = this.reflector.get(HasRole, context.getHandler());
+        const scopes = request.scopes;
 
-        return request.authenticatedUser?.hasRole(requestedRole);
+        return request.authenticatedUser?.hasRole(requestedRole, scopes);
     }
 }

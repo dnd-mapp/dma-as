@@ -98,4 +98,8 @@ export class ChangePasswordData {
     @IsNotEmpty()
     @MinLength(12)
     public newPassword: string;
+
+    @IsDate()
+    @IsOptional()
+    public passwordExpiry?: Date;
 }
