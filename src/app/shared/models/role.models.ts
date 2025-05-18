@@ -1,7 +1,7 @@
 import { PickType } from '@nestjs/mapped-types';
 import { Type } from 'class-transformer';
 import { IsEnum, IsNotEmpty, IsString, MinLength, ValidateNested } from 'class-validator';
-import { ScopeNoRoles, scopesToScope } from './scope.models';
+import { ScopeName, ScopeNoRoles, scopesToScope } from './scope.models';
 
 export const Roles = {
     USER: 'User',
@@ -28,6 +28,13 @@ export class Role {
 
     public getAllRoleScopes() {
         return scopesToScope([...this.scopes].map((scope) => scope.name));
+    }
+
+    public hasAllScopes(scopes: ScopeName[]) {
+        const numberOfScopes = [...this.scopes].length;
+        const matchingScopes = [...this.scopes].filter((scope) => scopes.includes(scope.name)).length;
+
+        return matchingScopes === numberOfScopes;
     }
 }
 

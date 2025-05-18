@@ -2,6 +2,7 @@ import { PickType } from '@nestjs/mapped-types';
 import { Exclude, Type } from 'class-transformer';
 import { IsDate, IsNotEmpty, IsOptional, IsString, MinLength, ValidateNested } from 'class-validator';
 import { Role, RoleName, transformAllRoleScopes } from './role.models';
+import { ScopeName } from './scope.models';
 
 export class User {
     @IsString()
@@ -30,8 +31,16 @@ export class User {
         return [...this.roles].map((role) => role.getAllRoleScopes()).join(' ');
     }
 
-    public hasRole(role: RoleName) {
-        return [...this.roles].some(({ name }) => role === name);
+    /**
+     * Will check if a User has a Role with a particular name and also checks if all Scopes
+     * of that Role the found Role are present in the provided Scopes.
+     *
+     * @param {RoleName} roleName - The name of the Role to be expected that a User has.
+     * @param {ScopeName[]} scopes - The Scopes that are available within which all Scopes
+     * of the found Role (if any) should be present.
+     */
+    public hasRole(roleName: RoleName, scopes: ScopeName[]) {
+        return [...this.roles].some((role) => roleName === role.name && role.hasAllScopes(scopes));
     }
 }
 
