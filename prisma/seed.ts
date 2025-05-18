@@ -11,7 +11,11 @@ async function generateDefaultRoles() {
     console.log('Generating default Roles...');
     const rolesService = app.get(RolesService);
 
-    await Promise.all([rolesService.create({ name: Roles.USER }), rolesService.create({ name: Roles.ADMIN })]);
+    await Promise.all([
+        rolesService.create({ name: Roles.USER }),
+        rolesService.create({ name: Roles.ADMIN }),
+        rolesService.create({ name: Roles.SUPER_ADMIN }),
+    ]);
 }
 
 async function generateDefaultScopes() {
@@ -53,11 +57,12 @@ async function generateDefaultUsers() {
 
     const userRole = await rolesService.getByName(Roles.USER);
     const adminRole = await rolesService.getByName(Roles.ADMIN);
+    const superAdminRole = await rolesService.getByName(Roles.SUPER_ADMIN);
 
     await usersService.create({
         username: 'Admin',
         password: 'changemenow',
-        roles: new Set([userRole, adminRole]),
+        roles: new Set([userRole, adminRole, superAdminRole]),
         passwordExpiry: new Date(),
     });
 }

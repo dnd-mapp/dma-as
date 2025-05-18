@@ -36,11 +36,11 @@ export class User {
      * of that Role the found Role are present in the provided Scopes.
      *
      * @param {RoleName} roleName - The name of the Role to be expected that a User has.
-     * @param {ScopeName[]} scopes - The Scopes that are available within which all Scopes
+     * @param {ScopeName[]} [scopes] - The Scopes that are available within which all Scopes
      * of the found Role (if any) should be present.
      */
-    public hasRole(roleName: RoleName, scopes: ScopeName[]) {
-        return [...this.roles].some((role) => roleName === role.name && role.hasAllScopes(scopes));
+    public hasRole(roleName: RoleName, scopes?: ScopeName[]) {
+        return [...this.roles].some((role) => roleName === role.name && (!scopes || role.hasAllScopes(scopes)));
     }
 }
 

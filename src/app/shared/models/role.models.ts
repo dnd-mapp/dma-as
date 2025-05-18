@@ -6,6 +6,7 @@ import { ScopeName, ScopeNoRoles, scopesToScope } from './scope.models';
 export const Roles = {
     USER: 'User',
     ADMIN: 'Admin',
+    SUPER_ADMIN: 'Super Admin',
     DUNGEON_MASTER: 'Dungeon Master',
 } as const;
 
