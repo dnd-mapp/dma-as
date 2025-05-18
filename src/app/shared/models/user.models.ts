@@ -1,6 +1,6 @@
 import { PickType } from '@nestjs/mapped-types';
 import { Exclude, Type } from 'class-transformer';
-import { IsArray, IsDate, IsNotEmpty, IsOptional, IsString, MinLength, ValidateNested } from 'class-validator';
+import { IsDate, IsNotEmpty, IsOptional, IsString, MinLength, ValidateNested } from 'class-validator';
 import { Role, RoleName, transformAllRoleScopes } from './role.models';
 
 export class User {
@@ -23,7 +23,6 @@ export class User {
     public passwordExpiry?: Date;
 
     @ValidateNested()
-    @IsArray()
     @Type(() => Role)
     public roles: Set<Role>;
 
