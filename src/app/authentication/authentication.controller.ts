@@ -9,7 +9,9 @@ import {
     UseGuards,
     UseInterceptors,
 } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { FastifyReply, FastifyRequest } from 'fastify';
+import { authenticationThrottlerOptions } from '../config';
 import { DmaLogger } from '../logging';
 import {
     AuthenticationGuard,
@@ -38,6 +40,7 @@ export class AuthenticationController {
         this.logger.setContext('AuthenticationController');
     }
 
+    @Throttle(authenticationThrottlerOptions)
     @Post('/sign-up')
     public async signUp(@Body() signUpData: SignUpData, @Res({ passthrough: true }) response: FastifyReply) {
         this.logger.log(`User registration initiated for username "${signUpData.username}"`);
@@ -50,6 +53,7 @@ export class AuthenticationController {
         return responseData;
     }
 
+    @Throttle(authenticationThrottlerOptions)
     @Post('/authorize')
     public async authorize(@Body() data: AuthorizeRequest, @Res() response: FastifyReply) {
         this.logger.log('Authorize attempt initialized');
@@ -59,6 +63,7 @@ export class AuthenticationController {
         response.status(HttpStatus.FOUND).redirect(`https://localhost.auth.dndmapp.net/app/login?state=${data.state}`);
     }
 
+    @Throttle(authenticationThrottlerOptions)
     @Post('/login')
     public async login(@Body() data: LoginData, @Res() response: FastifyReply) {
         this.logger.log(`Login attempt initiated for username "${data.username}"`);
@@ -70,6 +75,7 @@ export class AuthenticationController {
             .redirect(`${redirectUrl}?authorizationCode=${authorizationCode}&state=${data.state}`);
     }
 
+    @Throttle(authenticationThrottlerOptions)
     @Post('/token')
     public async token(
         @Body() data: TokenRequestData,
