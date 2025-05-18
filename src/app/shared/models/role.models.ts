@@ -1,4 +1,4 @@
-import { OmitType, PickType } from '@nestjs/mapped-types';
+import { PickType } from '@nestjs/mapped-types';
 import { Type } from 'class-transformer';
 import { IsEnum, IsNotEmpty, IsString, MinLength, ValidateNested } from 'class-validator';
 import { ScopeNoRoles, scopesToScope } from './scope.models';
@@ -33,7 +33,7 @@ export class Role {
 
 export class CreateRoleData extends PickType(Role, ['name'] as const) {}
 
-export class RoleNoScopes extends OmitType(Role, ['scopes'] as const) {}
+export class RoleNoScopes extends PickType(Role, ['id', 'name'] as const) {}
 
 export function transformAllRoleScopes<T = unknown>(data: T[]) {
     return data.map((role) => transformRoleScopes(role));
