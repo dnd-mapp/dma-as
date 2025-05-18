@@ -10,9 +10,11 @@ import {
     GenerateTokenParams,
     REFRESH_TOKEN_EXPIRATION_TIME,
     REFRESH_TOKEN_NBF,
+    ScopeNames,
     TokenMetadata,
     TokenType,
     TokenTypes,
+    User,
 } from '../shared';
 import { UsersService } from '../users';
 import { TokensRepository } from './tokens.repository';
@@ -45,11 +47,13 @@ export class TokensService implements OnModuleInit {
         const key = await this.keysService.getKeysByClientId(client.id);
         const user = await this.usersService.getById(userId);
 
+        const scope = this.determineTokenScope(user);
+
         const params = {
             userId: user.id,
             pti: pti,
             key: key,
-            scope: user.getAllRoleScopes(),
+            scope: scope,
         };
         const accessToken = await this.generateToken({
             ...params,
@@ -157,5 +161,14 @@ export class TokensService implements OnModuleInit {
 
     private async getChildByPti(pti: string) {
         return await this.tokensRepository.findAllByPti(pti);
+    }
+
+    private determineTokenScope(user: User) {
+        const scope = user.getAllRoleScopes();
+
+        if (user.passwordExpiry && user.passwordExpiry.getTime() <= Date.now()) {
+            return ScopeNames.CHANGE_PASSWORD;
+        }
+        return scope;
     }
 }
