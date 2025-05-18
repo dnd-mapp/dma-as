@@ -57,11 +57,12 @@ async function generateDefaultUsers() {
 
     const userRole = await rolesService.getByName(Roles.USER);
     const adminRole = await rolesService.getByName(Roles.ADMIN);
+    const superAdminRole = await rolesService.getByName(Roles.SUPER_ADMIN);
 
     await usersService.create({
         username: 'Admin',
         password: 'changemenow',
-        roles: new Set([userRole, adminRole]),
+        roles: new Set([userRole, adminRole, superAdminRole]),
         passwordExpiry: new Date(),
     });
 }
