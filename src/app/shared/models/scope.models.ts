@@ -33,7 +33,7 @@ export type ScopeName = (typeof ScopeNames)[keyof typeof ScopeNames];
 export function scopeToScopes(scope: string) {
     const scopes = scope.split(' ');
     return scopes
-        .filter((scope) => !Object.values(ScopeNames).includes(scope as ScopeName))
+        .filter((scope) => Object.values(ScopeNames).includes(scope as ScopeName))
         .map((scope) => scope as ScopeName);
 }
 
