@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { DmaLogger } from '../logging';
 import { RolesService } from '../roles';
-import { CreateUserData, Role, UpdateUserData, User } from '../shared';
+import { CreateUserData, Role, Roles, UpdateUserData, User } from '../shared';
 import { hashPassword } from '../utils';
 import { UsersRepository } from './users.repository';
 
@@ -74,8 +74,14 @@ export class UsersService {
 
     public async removeById(userId: string) {
         try {
-            await this.validateUserExists(userId, `Can't remove User. User with ID "${userId}" does not exist.`);
+            const user = await this.validateUserExists(
+                userId,
+                `Can't remove User. User with ID "${userId}" does not exist.`
+            );
 
+            if (user.hasRole(Roles.SUPER_ADMIN)) {
+                throw new BadRequestException(`Can't remove User. Reason: User is a "${Roles.SUPER_ADMIN}"`);
+            }
             await this.usersRepository.removeById(userId);
         } catch (error) {
             if (error instanceof NotFoundException && error.message.includes('does not exist')) {
@@ -86,7 +92,9 @@ export class UsersService {
     }
 
     private async validateUserExists(userId: string, errorMessage: string) {
-        if (await this.getById(userId)) return;
+        const query = await this.getById(userId);
+
+        if (query) return query;
         throw new NotFoundException(errorMessage);
     }
 
