@@ -71,7 +71,30 @@ export class AuthenticationService {
                 throw new Error();
             }
             if (user.status !== AccountStatuses.ACTIVE) {
-                // TODO: Log different messages depending on status and check for account lock
+                switch (user.status) {
+                    case AccountStatuses.PENDING_VERIFICATION:
+                        this.logger.warn(failedAuthenticationMessage(user.username, 'Email address not yet verified'));
+                        break;
+
+                    case AccountStatuses.BANNED:
+                        this.logger.warn(failedAuthenticationMessage(user.username, 'Account is banned'));
+                        break;
+
+                    case AccountStatuses.SUSPENDED:
+                        this.logger.warn(
+                            failedAuthenticationMessage(
+                                user.username,
+                                `Account is suspended till "${user.lockedUntil}"`
+                            )
+                        );
+                        break;
+
+                    case AccountStatuses.LOCKED:
+                        this.logger.warn(
+                            failedAuthenticationMessage(user.username, `Account is locked till "${user.lockedUntil}"`)
+                        );
+                        break;
+                }
             }
             this.logger.log(`Login successful for username "${user.username}"`);
             await this.usersService.update({ ...user, lastLogin: new Date() });
