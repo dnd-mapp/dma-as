@@ -23,6 +23,10 @@ import { UsersService } from '../users';
 import { hashPassword, valueToBase64, valueToSHA256 } from '../utils';
 import { AuthorizationRepository } from './authorization.repository';
 
+function failedAuthenticationMessage(username: string, reason: string) {
+    return `Authentication failed for username "${username}" - Reason: ${reason}`;
+}
+
 @Injectable()
 export class AuthenticationService {
     constructor(
@@ -59,11 +63,11 @@ export class AuthenticationService {
             const user = await this.usersService.getByUsername(data.username);
 
             if (!user) {
-                this.logger.warn(`Authentication failed for username "${data.username}" - Reason: User does not exist`);
+                this.logger.warn(failedAuthenticationMessage(data.username, 'User does not exist'));
                 throw new Error();
             }
             if (!(await this.comparePassword(data.password, user.password))) {
-                this.logger.warn(`Authentication failed for username "${user.username}" - Reason: Incorrect password`);
+                this.logger.warn(failedAuthenticationMessage(user.username, 'Incorrect password'));
                 throw new Error();
             }
             if (user.status !== AccountStatuses.ACTIVE) {
