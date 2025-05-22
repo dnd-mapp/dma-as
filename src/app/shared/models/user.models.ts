@@ -1,6 +1,7 @@
 import { PickType } from '@nestjs/mapped-types';
 import { Exclude, Type } from 'class-transformer';
-import { IsDate, IsNotEmpty, IsOptional, IsString, MinLength, ValidateNested } from 'class-validator';
+import { IsDate, IsEnum, IsNotEmpty, IsOptional, IsString, MinLength, ValidateNested } from 'class-validator';
+import { AccountStatus, AccountStatuses } from './account-status.models';
 import { Role, RoleName, transformAllRoleScopes } from './role.models';
 import { ScopeName } from './scope.models';
 
@@ -19,13 +20,25 @@ export class User {
     @Exclude({ toPlainOnly: true })
     public password: string;
 
-    @IsDate()
-    @IsOptional()
-    public passwordExpiry?: Date;
+    @IsEnum(AccountStatuses)
+    @IsString()
+    public status: AccountStatus;
 
     @ValidateNested()
     @Type(() => Role)
     public roles: Set<Role>;
+
+    @IsDate()
+    @IsOptional()
+    public passwordExpiry?: Date;
+
+    @IsDate()
+    @IsOptional()
+    public lastLogin?: Date;
+
+    @IsDate()
+    @IsOptional()
+    public lockedUntil?: Date;
 
     public getAllRoleScopes() {
         return [...this.roles].map((role) => role.getAllRoleScopes()).join(' ');
@@ -44,9 +57,26 @@ export class User {
     }
 }
 
-export class CreateUserData extends PickType(User, ['username', 'password', 'roles', 'passwordExpiry'] as const) {}
+export class CreateUserData extends PickType(User, [
+    'username',
+    'password',
+    'status',
+    'roles',
+    'passwordExpiry',
+    'lastLogin',
+    'lockedUntil',
+] as const) {}
 
-export class UpdateUserData extends PickType(User, ['id', 'username', 'roles', 'passwordExpiry'] as const) {}
+export class UpdateUserData extends PickType(User, [
+    'id',
+    'username',
+    'password',
+    'status',
+    'roles',
+    'passwordExpiry',
+    'lastLogin',
+    'lockedUntil',
+] as const) {}
 
 export function transformAllUserRoles<T = unknown>(data: T[]) {
     return data.map((user) => transformUserRoles(user));

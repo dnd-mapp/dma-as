@@ -17,10 +17,15 @@ import {
     TokenTypes,
     User,
 } from '../shared';
+import { AccountStatuses } from '../shared/models/account-status.models';
 import { TokensService } from '../tokens';
 import { UsersService } from '../users';
 import { hashPassword, valueToBase64, valueToSHA256 } from '../utils';
 import { AuthorizationRepository } from './authorization.repository';
+
+function failedAuthenticationMessage(username: string, reason: string) {
+    return `Authentication failed for username "${username}" - Reason: ${reason}`;
+}
 
 @Injectable()
 export class AuthenticationService {
@@ -39,7 +44,11 @@ export class AuthenticationService {
     public async signUp(signUpData: SignUpData) {
         const userRole = await this.rolesService.getByName(Roles.USER);
 
-        const createdUser = await this.usersService.create({ ...signUpData, roles: new Set([userRole]) });
+        const createdUser = await this.usersService.create({
+            ...signUpData,
+            roles: new Set([userRole]),
+            status: AccountStatuses.ACTIVE, // TODO: Set to {@link AccountStatuses.PENDING_VERIFICATION} after email service has been set up
+        });
         this.logger.log(`User account created successfully for username "${createdUser.username}"`);
 
         return createdUser;
@@ -54,15 +63,43 @@ export class AuthenticationService {
             const user = await this.usersService.getByUsername(data.username);
 
             if (!user) {
-                this.logger.warn(`Authentication failed for username "${data.username}" - Reason: User does not exist`);
+                this.logger.warn(failedAuthenticationMessage(data.username, 'User does not exist'));
                 throw new Error();
             }
-            if (await this.comparePassword(data.password, user.password)) {
-                this.logger.log(`Login successful for username "${user.username}"`);
-                return await this.updateAuthorization(data.state, user.id);
+            if (!(await this.comparePassword(data.password, user.password))) {
+                this.logger.warn(failedAuthenticationMessage(user.username, 'Incorrect password'));
+                throw new Error();
             }
-            this.logger.warn(`Authentication failed for username "${user.username}" - Reason: Incorrect password`);
-            throw new Error();
+            if (user.status !== AccountStatuses.ACTIVE) {
+                switch (user.status) {
+                    case AccountStatuses.PENDING_VERIFICATION:
+                        this.logger.warn(failedAuthenticationMessage(user.username, 'Email address not yet verified'));
+                        break;
+
+                    case AccountStatuses.BANNED:
+                        this.logger.warn(failedAuthenticationMessage(user.username, 'Account is banned'));
+                        break;
+
+                    case AccountStatuses.SUSPENDED:
+                        this.logger.warn(
+                            failedAuthenticationMessage(
+                                user.username,
+                                `Account is suspended till "${user.lockedUntil}"`
+                            )
+                        );
+                        break;
+
+                    case AccountStatuses.LOCKED:
+                        this.logger.warn(
+                            failedAuthenticationMessage(user.username, `Account is locked till "${user.lockedUntil}"`)
+                        );
+                        break;
+                }
+            }
+            this.logger.log(`Login successful for username "${user.username}"`);
+            await this.usersService.update({ ...user, lastLogin: new Date() });
+
+            return await this.updateAuthorization(data.state, user.id);
         } catch (error) {
             console.error(error);
             throw new BadRequestException('Wrong username or password');

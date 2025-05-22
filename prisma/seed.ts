@@ -4,6 +4,7 @@ import { AppModule, ClientsService, UsersService } from '../src';
 import { RolesService } from '../src/app/roles';
 import { ScopesService } from '../src/app/scopes';
 import { Roles, ScopeNames } from '../src/app/shared';
+import { AccountStatuses } from '../src/app/shared/models/account-status.models';
 
 let app: INestApplication<unknown>;
 
@@ -64,6 +65,7 @@ async function generateDefaultUsers() {
         password: 'changemenow',
         roles: new Set([userRole, adminRole, superAdminRole]),
         passwordExpiry: new Date(),
+        status: AccountStatuses.ACTIVE,
     });
 }
 
