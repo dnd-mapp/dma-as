@@ -55,7 +55,7 @@ export const appConfig = () =>
         ).split(','),
         cookieSigningSecret: process.env[ENV_NAME_COOKIE_SIGNING_SECRET],
         encryptionKey: process.env[ENV_NAME_ENCRYPTION_KEY],
-        host: process.env[ENV_NAME_HOST],
+        host: process.env[ENV_NAME_HOST] ?? '0.0.0.0',
         port: parseNumber(process.env[ENV_NAME_PORT]),
         ssl: !hasSSLCertificateAndKey()
             ? null
