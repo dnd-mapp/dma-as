@@ -1,4 +1,14 @@
-import { IsBoolean, IsDate, IsNotEmpty, IsOptional, IsString, IsUrl, MinLength, ValidateIf } from 'class-validator';
+import {
+    IsBoolean,
+    IsDate,
+    IsEmail,
+    IsNotEmpty,
+    IsOptional,
+    IsString,
+    IsUrl,
+    MinLength,
+    ValidateIf,
+} from 'class-validator';
 
 /** Maximum lifetime of an authorization code in ms, which currently is set to 5 minutes. */
 export const MAX_AUTHORIZATION_CODE_LIFETIME = 300_000 as const;
@@ -17,6 +27,11 @@ export class SignUpData {
     @IsString()
     @IsNotEmpty()
     public password: string;
+
+    @IsEmail({ allow_display_name: false, require_display_name: false, require_tld: true, allow_ip_domain: false })
+    @IsNotEmpty()
+    @IsString()
+    public email: string;
 }
 
 export class MessageWithState {

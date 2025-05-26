@@ -74,7 +74,14 @@ export class UsersRepository {
                     data: {
                         id: data.id,
                         username: data.username,
+                        email: data.email,
+                        emailVerificationCode: data.emailVerificationCode,
+                        emailVerificationCodeExpiry: data.emailVerificationCodeExpiry,
                         passwordExpiry: data.passwordExpiry,
+                        loginAttempts: data.loginAttempts,
+                        lastLogin: data.lastLogin,
+                        status: data.status,
+                        lockedUntil: data.lockedUntil,
                         roles: {
                             deleteMany: [...currentRoles]
                                 .filter((oldRole) => ![...data.roles].some((newRole) => oldRole.id === newRole.id))
@@ -122,8 +129,11 @@ export class UsersRepository {
                     ...selectedUserAttributes,
                     data: {
                         username: data.username,
+                        email: data.email,
+                        emailVerified: data.emailVerified,
                         password: data.password,
                         passwordExpiry: data.passwordExpiry,
+                        status: data.status,
                         roles: {
                             createMany: {
                                 data: [...data.roles].map(({ id }) => ({ roleId: id })),

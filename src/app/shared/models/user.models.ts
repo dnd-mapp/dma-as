@@ -1,9 +1,30 @@
 import { PickType } from '@nestjs/mapped-types';
 import { Exclude, Type } from 'class-transformer';
-import { IsDate, IsEnum, IsNotEmpty, IsOptional, IsString, MinLength, ValidateNested } from 'class-validator';
+import {
+    IsBoolean,
+    IsDate,
+    IsEmail,
+    IsEnum,
+    IsInt,
+    IsNotEmpty,
+    IsOptional,
+    IsString,
+    Max,
+    Min,
+    MinLength,
+    ValidateNested,
+} from 'class-validator';
 import { AccountStatus, AccountStatuses } from './account-status.models';
 import { Role, RoleName, transformAllRoleScopes } from './role.models';
 import { ScopeName } from './scope.models';
+
+export const MAX_LOGIN_ATTEMPTS = 3;
+
+/**
+ * Timeout in ms. for when a User has attempted to log in too many times and failed.
+ * Currently set to 10 minutes.
+ */
+export const LOGIN_LOCK_TIMEOUT = 36_000_000;
 
 export class User {
     @IsString()
@@ -20,25 +41,47 @@ export class User {
     @Exclude({ toPlainOnly: true })
     public password: string;
 
-    @IsEnum(AccountStatuses)
-    @IsString()
-    public status: AccountStatus;
-
-    @ValidateNested()
-    @Type(() => Role)
-    public roles: Set<Role>;
-
     @IsDate()
     @IsOptional()
     public passwordExpiry?: Date;
+
+    @IsEmail({ allow_display_name: false, require_display_name: false, require_tld: true, allow_ip_domain: false })
+    @IsNotEmpty()
+    @IsString()
+    public email: string;
+
+    @IsBoolean()
+    public emailVerified: boolean;
+
+    @IsNotEmpty()
+    @IsString()
+    @IsOptional()
+    public emailVerificationCode?: string;
+
+    @IsDate()
+    @IsOptional()
+    public emailVerificationCodeExpiry?: Date;
+
+    @Max(MAX_LOGIN_ATTEMPTS)
+    @Min(0)
+    @IsInt()
+    public loginAttempts: number;
 
     @IsDate()
     @IsOptional()
     public lastLogin?: Date;
 
+    @IsEnum(AccountStatuses)
+    @IsString()
+    public status: AccountStatus;
+
     @IsDate()
     @IsOptional()
     public lockedUntil?: Date;
+
+    @ValidateNested()
+    @Type(() => Role)
+    public roles: Set<Role>;
 
     public getAllRoleScopes() {
         return [...this.roles].map((role) => role.getAllRoleScopes()).join(' ');
@@ -59,23 +102,27 @@ export class User {
 
 export class CreateUserData extends PickType(User, [
     'username',
+    'email',
+    'emailVerified',
     'password',
-    'status',
-    'roles',
     'passwordExpiry',
-    'lastLogin',
-    'lockedUntil',
+    'roles',
+    'status',
 ] as const) {}
 
 export class UpdateUserData extends PickType(User, [
     'id',
     'username',
-    'password',
-    'status',
-    'roles',
+    'email',
+    'emailVerified',
+    'emailVerificationCode',
+    'emailVerificationCodeExpiry',
     'passwordExpiry',
+    'loginAttempts',
     'lastLogin',
+    'status',
     'lockedUntil',
+    'roles',
 ] as const) {}
 
 export function transformAllUserRoles<T = unknown>(data: T[]) {

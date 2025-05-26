@@ -9,12 +9,15 @@ import {
     AuthorizeRequest,
     ChangePasswordData,
     decodeToken,
+    LOGIN_LOCK_TIMEOUT,
     LoginData,
     MAX_AUTHORIZATION_CODE_LIFETIME,
+    MAX_LOGIN_ATTEMPTS,
     Roles,
     SignUpData,
     TokenRequestData,
     TokenTypes,
+    TooManyException,
     User,
 } from '../shared';
 import { AccountStatuses } from '../shared/models/account-status.models';
@@ -46,8 +49,9 @@ export class AuthenticationService {
 
         const createdUser = await this.usersService.create({
             ...signUpData,
+            emailVerified: false,
             roles: new Set([userRole]),
-            status: AccountStatuses.ACTIVE, // TODO: Set to {@link AccountStatuses.PENDING_VERIFICATION} after email service has been set up
+            status: AccountStatuses.PENDING_VERIFICATION,
         });
         this.logger.log(`User account created successfully for username "${createdUser.username}"`);
 
@@ -60,42 +64,12 @@ export class AuthenticationService {
 
     public async login(data: LoginData) {
         try {
-            const user = await this.usersService.getByUsername(data.username);
+            const user = await this.checkAccountExists(data.username);
 
-            if (!user) {
-                this.logger.warn(failedAuthenticationMessage(data.username, 'User does not exist'));
-                throw new Error();
-            }
-            if (!(await this.comparePassword(data.password, user.password))) {
-                this.logger.warn(failedAuthenticationMessage(user.username, 'Incorrect password'));
-                throw new Error();
-            }
-            if (user.status !== AccountStatuses.ACTIVE) {
-                switch (user.status) {
-                    case AccountStatuses.PENDING_VERIFICATION:
-                        this.logger.warn(failedAuthenticationMessage(user.username, 'Email address not yet verified'));
-                        break;
+            await this.increaseLoginAttempts(user);
+            await this.checkUserPassword(user, data.password);
+            this.checkAccountStatus(user);
 
-                    case AccountStatuses.BANNED:
-                        this.logger.warn(failedAuthenticationMessage(user.username, 'Account is banned'));
-                        break;
-
-                    case AccountStatuses.SUSPENDED:
-                        this.logger.warn(
-                            failedAuthenticationMessage(
-                                user.username,
-                                `Account is suspended till "${user.lockedUntil}"`
-                            )
-                        );
-                        break;
-
-                    case AccountStatuses.LOCKED:
-                        this.logger.warn(
-                            failedAuthenticationMessage(user.username, `Account is locked till "${user.lockedUntil}"`)
-                        );
-                        break;
-                }
-            }
             this.logger.log(`Login successful for username "${user.username}"`);
             await this.usersService.update({ ...user, lastLogin: new Date() });
 
@@ -137,11 +111,6 @@ export class AuthenticationService {
     @Cron('0 5 * * * *')
     protected async removeExpiredAuthorizationCodes() {
         await this.authorizationRepository.removeExpiredAuthorizationCodes();
-    }
-
-    private async comparePassword(password: string, hash: string) {
-        if (!hash) return false;
-        return await compare(password, hash);
     }
 
     private async generateTokensWithAuthorizationCode(authorizationCode: string, codeVerifier: string) {
@@ -223,5 +192,66 @@ export class AuthenticationService {
             tokens: await this.tokensService.generateTokens(client, sub, jti),
             clientId: client.id,
         };
+    }
+
+    private async checkAccountExists(username: string) {
+        const user = await this.usersService.getByUsername(username);
+
+        if (user) return user;
+        this.logger.warn(failedAuthenticationMessage(username, 'User does not exist'));
+        throw new Error();
+    }
+
+    private async increaseLoginAttempts(user: User) {
+        if (user.loginAttempts === MAX_LOGIN_ATTEMPTS && user.status === AccountStatuses.LOCKED) {
+            throw new TooManyException('Too many login attempts. Please try again later.');
+        }
+        user.loginAttempts++;
+        await this.usersService.update(user);
+
+        if (user.loginAttempts === MAX_LOGIN_ATTEMPTS) {
+            user.lockedUntil = new Date(Date.now() + LOGIN_LOCK_TIMEOUT);
+            user.status = AccountStatuses.LOCKED;
+            await this.usersService.update(user);
+
+            throw new TooManyException('Too many login attempts. Please try again later.');
+        }
+    }
+
+    private async checkUserPassword(user: User, password: string) {
+        if (await this.comparePassword(password, user.password)) return;
+        this.logger.warn(failedAuthenticationMessage(user.username, 'Incorrect password'));
+        throw new Error();
+    }
+
+    private async comparePassword(password: string, hash: string) {
+        if (!hash) return false;
+        return await compare(password, hash);
+    }
+
+    private checkAccountStatus(user: User) {
+        if (user.status == AccountStatuses.ACTIVE) return;
+        switch (user.status) {
+            case AccountStatuses.PENDING_VERIFICATION:
+                this.logger.warn(failedAuthenticationMessage(user.username, 'Email address not yet verified'));
+                break;
+
+            case AccountStatuses.BANNED:
+                this.logger.warn(failedAuthenticationMessage(user.username, 'Account is banned'));
+                break;
+
+            case AccountStatuses.SUSPENDED:
+                this.logger.warn(
+                    failedAuthenticationMessage(user.username, `Account is suspended till "${user.lockedUntil}"`)
+                );
+                break;
+
+            case AccountStatuses.LOCKED:
+                this.logger.warn(
+                    failedAuthenticationMessage(user.username, `Account is locked till "${user.lockedUntil}"`)
+                );
+                break;
+        }
+        throw new Error();
     }
 }
