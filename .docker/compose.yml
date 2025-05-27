@@ -1,3 +1,4 @@
+name: dma-authorization-server
 services:
     dma-as:
         image: dnd-mapp/dma-as:latest
@@ -26,11 +27,9 @@ services:
             - '3306:3306'
         volumes:
             - ./mariadb/data:/var/lib/mysql
+            - ./start.sh:/docker-entrypoint-initdb.d/start.sh
         environment:
             MARIADB_ROOT_PASSWORD_FILE: /run/secrets/mariadb-root-password
-            MARIADB_DATABASE: dnd_mapp_auth_db
-            MARIADB_USER: dnd_mapp_auth_db_user
-            MARIADB_USER_PASSWORD_FILE: /run/secrets/mariadb-user-password
         secrets:
             - mariadb-root-password
             - mariadb-user-password
