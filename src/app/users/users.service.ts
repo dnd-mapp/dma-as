@@ -2,7 +2,7 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { DmaLogger } from '../logging';
 import { RolesService } from '../roles';
 import { CreateUserData, Role, Roles, UpdateUserData, User } from '../shared';
-import { hashPassword } from '../utils';
+import { createHash } from '../utils';
 import { UsersRepository } from './users.repository';
 
 @Injectable()
@@ -59,7 +59,7 @@ export class UsersService {
                 `Can't create User. Username "${data.username}" cannot be used.`
             );
             await this.validateRolesExist(data.roles, `Can't create User - Reason: Role with ID "$ID" does not exist.`);
-            data.password = await hashPassword(data.password);
+            data.password = await createHash(data.password);
 
             return await this.usersRepository.create(data);
         } catch (error) {

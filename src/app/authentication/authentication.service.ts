@@ -1,7 +1,6 @@
 import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { Cron } from '@nestjs/schedule';
-import { compare } from 'bcryptjs';
 import { ClientsService } from '../clients';
 import { DmaLogger } from '../logging';
 import { RolesService } from '../roles';
@@ -23,7 +22,7 @@ import {
 import { AccountStatuses } from '../shared/models/account-status.models';
 import { TokensService } from '../tokens';
 import { UsersService } from '../users';
-import { hashPassword, valueToBase64, valueToSHA256 } from '../utils';
+import { compareHashToValue, createHash, valueToBase64, valueToSHA256 } from '../utils';
 import { AuthorizationRepository } from './authorization.repository';
 
 function failedAuthenticationMessage(username: string, reason: string) {
@@ -96,7 +95,7 @@ export class AuthenticationService {
             this.logger.warn(`Change password failed for User with ID "${user.id}" - Reason: Incorrect old password`);
             throw new BadRequestException('Old password is incorrect');
         }
-        user.password = await hashPassword(data.newPassword);
+        user.password = await createHash(data.newPassword);
 
         if (user.passwordExpiry) {
             user.passwordExpiry = data.passwordExpiry ?? null;
@@ -226,7 +225,7 @@ export class AuthenticationService {
 
     private async comparePassword(password: string, hash: string) {
         if (!hash) return false;
-        return await compare(password, hash);
+        return await compareHashToValue(password, hash);
     }
 
     private checkAccountStatus(user: User) {
