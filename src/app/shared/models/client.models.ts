@@ -11,15 +11,19 @@ export class RedirectURL {
 export class Client {
     @IsNotEmpty()
     @IsString()
-    id: string;
+    public id: string;
 
     @IsNotEmpty()
     @IsString()
-    audience: string;
+    public audience: string;
 
     @IsArray()
     @ValidateNested()
-    redirectURLs: RedirectURL[];
+    public redirectURLs: RedirectURL[];
+
+    public isAllowedToRedirectTo(url: string) {
+        return this.redirectURLs.some(({ url: redirectURL }) => redirectURL === url);
+    }
 }
 
 export class CreateClientData extends PickType(Client, ['audience', 'redirectURLs'] as const) {}

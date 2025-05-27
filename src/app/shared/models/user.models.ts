@@ -26,6 +26,12 @@ export const MAX_LOGIN_ATTEMPTS = 3;
  */
 export const LOGIN_LOCK_TIMEOUT = 36_000_000;
 
+/**
+ * Expiration time in ms. for verifying an email address when a User creates a new account.
+ * Currently set to 10 minutes.
+ */
+export const EMAIL_VERIFICATION_EXPIRY = 36_000_000;
+
 export class User {
     @IsString()
     @IsNotEmpty()
@@ -104,6 +110,8 @@ export class CreateUserData extends PickType(User, [
     'username',
     'email',
     'emailVerified',
+    'emailVerificationCode',
+    'emailVerificationCodeExpiry',
     'password',
     'passwordExpiry',
     'roles',

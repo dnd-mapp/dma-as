@@ -32,6 +32,16 @@ export class SignUpData {
     @IsNotEmpty()
     @IsString()
     public email: string;
+
+    @IsUrl({ protocols: ['https'], require_protocol: true })
+    @IsNotEmpty()
+    @IsString()
+    public redirectUrl: string;
+
+    @IsNotEmpty()
+    @IsString()
+    @IsOptional()
+    public clientId?: string;
 }
 
 export class MessageWithState {

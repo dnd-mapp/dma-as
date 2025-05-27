@@ -42,9 +42,16 @@ export class AuthenticationController {
 
     @Throttle(authenticationThrottlerOptions)
     @Post('/sign-up')
-    public async signUp(@Body() signUpData: SignUpData, @Res({ passthrough: true }) response: FastifyReply) {
+    public async signUp(
+        @Body() signUpData: SignUpData,
+        @Req() request: FastifyRequest,
+        @Res({ passthrough: true }) response: FastifyReply
+    ) {
         this.logger.log(`User registration initiated for username "${signUpData.username}"`);
-        const responseData = await this.authenticationService.signUp(signUpData);
+        const responseData = await this.authenticationService.signUp({
+            ...signUpData,
+            clientId: request.headers[CLIENT_ID_HEADER] as string,
+        });
 
         response.headers({
             Location: `${response.request.url.replace('/auth/sign-up', `/users/${responseData.id}`)}`,
