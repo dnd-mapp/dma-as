@@ -1,7 +1,8 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { randomBytes } from 'crypto';
 import { DmaLogger } from '../logging';
 import { RolesService } from '../roles';
-import { CreateUserData, Role, Roles, UpdateUserData, User } from '../shared';
+import { CreateUserData, EMAIL_VERIFICATION_EXPIRY, Role, Roles, UpdateUserData, User } from '../shared';
 import { createHash } from '../utils';
 import { UsersRepository } from './users.repository';
 
@@ -53,6 +54,8 @@ export class UsersService {
     }
 
     public async create(data: CreateUserData) {
+        let code: string;
+
         try {
             await this.validateUsername(
                 data.username,
@@ -61,7 +64,19 @@ export class UsersService {
             await this.validateRolesExist(data.roles, `Can't create User - Reason: Role with ID "$ID" does not exist.`);
             data.password = await createHash(data.password);
 
-            return await this.usersRepository.create(data);
+            if (!data.emailVerified) {
+                code = randomBytes(32).toString('hex');
+
+                data.emailVerificationCode = await createHash(code);
+                data.emailVerificationCodeExpiry = new Date(Date.now() + EMAIL_VERIFICATION_EXPIRY);
+            }
+            const created = await this.usersRepository.create(data);
+
+            if (!code) return created;
+
+            // Overwrite the stored hashed verification code so that it can be injected in the email templates later on.
+            created.emailVerificationCode = code;
+            return created;
         } catch (error) {
             if (error instanceof BadRequestException && error.message.includes('cannot be used')) {
                 this.logger.warn(
