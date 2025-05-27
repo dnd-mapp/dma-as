@@ -7,7 +7,6 @@ import { AuthenticationModule } from './authentication';
 import { ClientsModule } from './clients';
 import { configOptions, jwtOptions, provideThrottlerGuard, throttlerOptions } from './config';
 import { DatabaseModule } from './database';
-import { EmailModule } from './email';
 import { KeysModule } from './keys';
 import { LoggingModule } from './logging';
 import { RolesModule } from './roles';
@@ -23,7 +22,6 @@ import { WellKnownController } from './well-known.controller';
         ScheduleModule.forRoot(),
         DatabaseModule,
         LoggingModule,
-        EmailModule,
         UsersModule,
         KeysModule,
         AuthenticationModule,
