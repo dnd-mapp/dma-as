@@ -9,6 +9,14 @@ const selectedUserAttributes = {
         username: true,
         password: true,
         passwordExpiry: true,
+        email: true,
+        emailVerified: true,
+        emailVerificationCode: true,
+        emailVerificationCodeExpiry: true,
+        loginAttempts: true,
+        lastLogin: true,
+        status: true,
+        lockedUntil: true,
         roles: {
             select: {
                 role: {
