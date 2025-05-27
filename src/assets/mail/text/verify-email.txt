@@ -1,7 +1,5 @@
 Hello Adventurer,
 
-Please confirm your registration by clicking on the link below:
+Please confirm your registration by copying the link below and pasting it into your browser's address bar.
 
-$link.
-
-If the link doesn't open automatically, copy and paste it into the address bar of your browser.
+{{ $link }}
