@@ -33,7 +33,7 @@ export class EmailService implements OnModuleInit, BeforeApplicationShutdown {
     }
 
     public async sendEmail(params: SendEmailParams) {
-        const { text, html } = await this.resolveEmailTemplateFromSubject(params.subject);
+        const { text, html } = await this.resolveEmailTemplateFromSubject(params.subject, params.data);
 
         // TODO: Add error handling
         await this.transporter.sendMail({
@@ -45,21 +45,39 @@ export class EmailService implements OnModuleInit, BeforeApplicationShutdown {
         });
     }
 
-    private async resolveEmailTemplateFromSubject(subject: EmailSubject) {
+    private async resolveEmailTemplateFromSubject(
+        subject: EmailSubject,
+        data: Record<string, string | boolean | number>
+    ) {
         const templateName = getTemplateName(subject);
 
-        const htmlTemplate = await this.retrieveEmailTemplate(resolve(this.baseTemplatesPath, `${templateName}.html`));
-        const textTemplate = await this.retrieveEmailTemplate(resolve(this.baseTemplatesPath, `${templateName}.txt`));
+        const htmlTemplate = await this.retrieveEmailTemplate(
+            resolve(this.baseTemplatesPath, 'html', `${templateName}.html`)
+        );
+        const textTemplate = await this.retrieveEmailTemplate(
+            resolve(this.baseTemplatesPath, 'text', `${templateName}.txt`)
+        );
 
-        // TODO: Replace variables with actual values
         return {
-            text: textTemplate,
-            html: htmlTemplate,
+            text: this.applyDataValues(htmlTemplate, data),
+            html: this.applyDataValues(textTemplate, data),
         };
     }
 
     private async retrieveEmailTemplate(filePath: string) {
         await stat(filePath);
         return await readFile(filePath, 'utf8');
+    }
+
+    /**
+     * Will go through the template string looking for `{{ $variableName }}` and replace that variableName with
+     * the value of the key with the same name.
+     */
+    private applyDataValues(template: string, data: Record<string, string | boolean | number>) {
+        Object.keys(data).forEach((key) => {
+            template = template.replaceAll(`{{ $${key} }}`, `${data[key]}`);
+        });
+
+        return template;
     }
 }
