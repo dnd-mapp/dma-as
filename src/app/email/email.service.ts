@@ -1,6 +1,7 @@
 import { BeforeApplicationShutdown, Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { readFile, stat } from 'fs/promises';
+import * as juice from 'juice';
 import { createTransport, Transporter } from 'nodemailer';
 import { Options } from 'nodemailer/lib/smtp-transport';
 import { resolve } from 'path';
@@ -59,8 +60,8 @@ export class EmailService implements OnModuleInit, BeforeApplicationShutdown {
         );
 
         return {
-            text: this.applyDataValues(htmlTemplate, data),
-            html: this.applyDataValues(textTemplate, data),
+            text: this.applyDataValues(textTemplate, data),
+            html: juice(this.applyDataValues(htmlTemplate, data)),
         };
     }
 
