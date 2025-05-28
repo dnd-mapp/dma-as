@@ -1,5 +1,1 @@
-Hello Adventurer,
-
-Please confirm your registration by copying the link below and pasting it into your browser's address bar.
-
-{{ $link }}
+Hello Adventurer,\n\nPlease confirm your registration by copying the link below and pasting it into your browser's address bar.\n\n{{ $link }}
