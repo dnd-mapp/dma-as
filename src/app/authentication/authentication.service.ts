@@ -66,7 +66,8 @@ export class AuthenticationService {
             to: createdUser.email,
             subject: EmailSubjects.VERIFY_EMAIL,
             data: {
-                link: `${signUpData.redirectUrl}?code=${createdUser.emailVerificationCode}`,
+                homeLink: signUpData.redirectUrl,
+                verifyLink: `${signUpData.redirectUrl}/complete-registration?code=${createdUser.emailVerificationCode}`,
             },
         });
 
