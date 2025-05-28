@@ -68,7 +68,7 @@ export class UsersService {
                 code = randomBytes(32).toString('hex');
 
                 data.emailVerificationCode = await createHash(code);
-                data.emailVerificationCodeExpiry = new Date(Date.now() + EMAIL_VERIFICATION_EXPIRY);
+                data.emailVerificationCodeExpiry = new Date(new Date().getTime() + EMAIL_VERIFICATION_EXPIRY);
             }
             const created = await this.usersRepository.create(data);
 

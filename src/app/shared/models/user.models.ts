@@ -24,13 +24,13 @@ export const MAX_LOGIN_ATTEMPTS = 3;
  * Timeout in ms. for when a User has attempted to log in too many times and failed.
  * Currently set to 10 minutes.
  */
-export const LOGIN_LOCK_TIMEOUT = 36_000_000;
+export const LOGIN_LOCK_TIMEOUT = 600_000;
 
 /**
  * Expiration time in ms. for verifying an email address when a User creates a new account.
  * Currently set to 10 minutes.
  */
-export const EMAIL_VERIFICATION_EXPIRY = 36_000_000;
+export const EMAIL_VERIFICATION_EXPIRY = 600_000;
 
 export class User {
     @IsString()
