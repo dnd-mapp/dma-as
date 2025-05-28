@@ -49,11 +49,13 @@ export class User {
 
     @IsDate()
     @IsOptional()
+    @Exclude({ toPlainOnly: true })
     public passwordExpiry?: Date;
 
     @IsEmail({ allow_display_name: false, require_display_name: false, require_tld: true, allow_ip_domain: false })
     @IsNotEmpty()
     @IsString()
+    @Exclude({ toPlainOnly: true })
     public email: string;
 
     @IsBoolean()
@@ -62,19 +64,23 @@ export class User {
     @IsNotEmpty()
     @IsString()
     @IsOptional()
+    @Exclude({ toPlainOnly: true })
     public emailVerificationCode?: string;
 
     @IsDate()
     @IsOptional()
+    @Exclude({ toPlainOnly: true })
     public emailVerificationCodeExpiry?: Date;
 
     @Max(MAX_LOGIN_ATTEMPTS)
     @Min(0)
     @IsInt()
+    @Exclude({ toPlainOnly: true })
     public loginAttempts: number;
 
     @IsDate()
     @IsOptional()
+    @Exclude({ toPlainOnly: true })
     public lastLogin?: Date;
 
     @IsEnum(AccountStatuses)
@@ -83,6 +89,7 @@ export class User {
 
     @IsDate()
     @IsOptional()
+    @Exclude({ toPlainOnly: true })
     public lockedUntil?: Date;
 
     @ValidateNested()
