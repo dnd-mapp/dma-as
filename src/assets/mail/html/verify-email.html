@@ -79,7 +79,7 @@
                 color: var(--muted);
             }
 
-            main a {
+            main a[role='button'] {
                 display: inline-block;
                 text-decoration: none;
                 background-color: var(--primary);
@@ -116,9 +116,11 @@
                 <a role="button" href="{{ $verifyLink }}">Confirm sign up</a>
                 <p>
                     <i class="muted">
-                        If the link doesn't open automatically, copy and paste it into the address bar of your browser.
+                        If the link doesn't open automatically, copy the link from below and paste it into the address
+                        bar of your browser.
                     </i>
                 </p>
+                <a href="{{ $verifyLink }}">{{ $verifyLink }}</a>
                 <hr />
                 <p>If you have not created a new account for DnD Mapp, you can safely ignore this email.</p>
             </section>
