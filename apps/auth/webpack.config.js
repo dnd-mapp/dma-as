@@ -2,11 +2,17 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 const GeneratePackageJsonPlugin = require('generate-package-json-webpack-plugin');
 const { resolve } = require('path');
 const nodeExternals = require('webpack-node-externals');
-const packageJson = require('./package.json');
+const packageJson = require('../../package.json');
+
+console.log(__dirname);
+
+const outputPath = resolve(__dirname, '../../dist/apps/auth');
 
 /** @type {import('webpack').Configuration} */
 const webpackConfig = {
-    entry: resolve(__dirname, 'src', 'main.ts'),
+    entry: {
+        auth: resolve(__dirname, 'src/main.ts'),
+    },
     externalsPresets: {
         node: true,
     },
@@ -21,7 +27,7 @@ const webpackConfig = {
     },
     output: {
         clean: true,
-        path: resolve(__dirname, 'dist', 'dma-as'),
+        path: outputPath,
         filename: 'main.js',
     },
     plugins: [
@@ -29,8 +35,8 @@ const webpackConfig = {
         new CopyWebpackPlugin({
             patterns: [
                 {
-                    from: resolve(__dirname, 'src', 'assets'),
-                    to: resolve(__dirname, 'dist', 'dma-as', 'assets'),
+                    from: resolve(__dirname, 'src/assets'),
+                    to: resolve(outputPath, 'assets'),
                 },
             ],
         }),

@@ -1,31 +1,34 @@
 {
     "$schema": "https://json.schemastore.org/nest-cli",
     "collection": "@nestjs/schematics",
-    "root": ".",
-    "sourceRoot": "src",
+    "root": "apps/auth",
+    "sourceRoot": "apps/auth/src",
     "entryFile": "main",
     "language": "ts",
-    "monorepo": false,
+    "monorepo": true,
     "compilerOptions": {
         "builder": {
-            "type": "webpack",
-            "options": {
-                "outDir": "dist/dma-as"
-            }
+            "type": "webpack"
         },
         "deleteOutDir": true,
         "plugins": [],
-        "webpackConfigPath": "webpack.config.js"
+        "webpack": true,
+        "webpackConfigPath": "apps/auth/webpack.config.js"
     },
     "generateOptions": {
-        "baseDir": "src/app"
+        "baseDir": "./"
     },
     "projects": {
-        "dma-as": {
+        "auth": {
             "type": "application",
-            "root": ".",
-            "sourceRoot": "src",
-            "entryFile": "main"
+            "root": "apps/auth",
+            "sourceRoot": "apps/auth/src",
+            "entryFile": "main",
+            "compilerOptions": {
+                "tsConfigPath": "apps/auth/tsconfig.app.json",
+                "webpack": true,
+                "webpackConfigPath": "apps/auth/webpack.config.js"
+            }
         }
     }
 }

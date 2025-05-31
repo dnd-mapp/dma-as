@@ -9,13 +9,13 @@
     },
     "scripts": {
         "clean": "npx ts-node tools/clean.ts",
-        "build": "npx nest build",
-        "build-dev": "npx nest build -w",
+        "auth:build": "npx nest build auth",
+        "auth:build-dev": "npx nest build -w auth",
         "docker-build": "docker build -f .docker/Dockerfile -t dnd-mapp/dma-as .",
-        "start": "npx nest start -w",
+        "auth:start": "npx nest start -w auth",
         "test": "npx jest",
         "test-dev": "npx jest --watch",
-        "lint": "npx eslint \"src/**/*.ts\"",
+        "lint": "npx eslint",
         "format:check": "npx prettier -l **/*",
         "format:write": "npx prettier -w **/*"
     },

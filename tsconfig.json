@@ -25,6 +25,9 @@
         "strictBuiltinIteratorReturn": true,
         "strictFunctionTypes": true,
         "target": "ES2023",
-        "useUnknownInCatchVariables": true
+        "useUnknownInCatchVariables": true,
+        "paths": {
+            "@dnd-mapp/dma-as/auth": ["apps/auth/src/public_api.ts"]
+        }
     }
 }

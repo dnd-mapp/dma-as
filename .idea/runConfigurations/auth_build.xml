@@ -1,13 +1,13 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="start" type="js.build_tools.npm">
+  <configuration default="false" name="auth:build" type="js.build_tools.npm">
     <package-json value="$PROJECT_DIR$/package.json" />
     <command value="run" />
     <scripts>
-      <script value="start" />
+      <script value="auth:build" />
     </scripts>
     <node-interpreter value="project" />
     <envs>
-      <env name="NODE_ENV" value="development" />
+      <env name="NODE_ENV" value="production" />
     </envs>
     <method v="2" />
   </configuration>
