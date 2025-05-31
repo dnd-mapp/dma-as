@@ -13,10 +13,18 @@ datasource db {
 }
 
 model User {
-    id             String    @id() @default(nanoid())
-    username       String    @unique(map: "uq_user_username")
-    password       String
-    passwordExpiry DateTime?
+    id                          String    @id() @default(nanoid())
+    username                    String    @unique(map: "uq_user_username")
+    password                    String
+    passwordExpiry              DateTime? @map(name: "password_expiry")
+    email                       String?   @map(name: "email")
+    emailVerified               Boolean   @default(false) @map(name: "email_verified")
+    emailVerificationCode       String?   @map(name: "email_verification_code")
+    emailVerificationCodeExpiry DateTime? @map(name: "email_verification_code_expiry")
+    loginAttempts               Int       @default(0) @map(name: "login_attempts")
+    lastLogin                   DateTime? @map(name: "last_login")
+    status                      String    @default("Active")
+    lockedUntil                 DateTime? @map(name: "locked_until")
 
     authorizations Authorization[]
     tokens         Token[]

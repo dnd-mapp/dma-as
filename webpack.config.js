@@ -1,6 +1,7 @@
+const CopyWebpackPlugin = require('copy-webpack-plugin');
+const GeneratePackageJsonPlugin = require('generate-package-json-webpack-plugin');
 const { resolve } = require('path');
 const nodeExternals = require('webpack-node-externals');
-const GeneratePackageJsonPlugin = require('generate-package-json-webpack-plugin');
 const packageJson = require('./package.json');
 
 /** @type {import('webpack').Configuration} */
@@ -23,7 +24,17 @@ const webpackConfig = {
         path: resolve(__dirname, 'dist', 'dma-as'),
         filename: 'main.js',
     },
-    plugins: [new GeneratePackageJsonPlugin(packageJson)],
+    plugins: [
+        new GeneratePackageJsonPlugin(packageJson),
+        new CopyWebpackPlugin({
+            patterns: [
+                {
+                    from: resolve(__dirname, 'src', 'assets'),
+                    to: resolve(__dirname, 'dist', 'dma-as', 'assets'),
+                },
+            ],
+        }),
+    ],
 };
 
 module.exports = webpackConfig;

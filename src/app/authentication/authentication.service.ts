@@ -1,7 +1,6 @@
-import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, HttpException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { Cron } from '@nestjs/schedule';
-import { compare } from 'bcryptjs';
 import { ClientsService } from '../clients';
 import { DmaLogger } from '../logging';
 import { RolesService } from '../roles';
@@ -9,18 +8,21 @@ import {
     AuthorizeRequest,
     ChangePasswordData,
     decodeToken,
+    LOGIN_LOCK_TIMEOUT,
     LoginData,
     MAX_AUTHORIZATION_CODE_LIFETIME,
+    MAX_LOGIN_ATTEMPTS,
     Roles,
     SignUpData,
     TokenRequestData,
     TokenTypes,
+    TooManyException,
     User,
 } from '../shared';
 import { AccountStatuses } from '../shared/models/account-status.models';
 import { TokensService } from '../tokens';
 import { UsersService } from '../users';
-import { hashPassword, valueToBase64, valueToSHA256 } from '../utils';
+import { compareHashToValue, createHash, valueToBase64, valueToSHA256 } from '../utils';
 import { AuthorizationRepository } from './authorization.repository';
 
 function failedAuthenticationMessage(username: string, reason: string) {
@@ -41,14 +43,25 @@ export class AuthenticationService {
         this.logger.setContext('AuthenticationService');
     }
 
-    public async signUp(signUpData: SignUpData) {
+    public async signUp(data: SignUpData) {
         const userRole = await this.rolesService.getByName(Roles.USER);
+        const client = await this.clientsService.getById(data.clientId);
 
-        const createdUser = await this.usersService.create({
-            ...signUpData,
-            roles: new Set([userRole]),
-            status: AccountStatuses.ACTIVE, // TODO: Set to {@link AccountStatuses.PENDING_VERIFICATION} after email service has been set up
-        });
+        if (!client || !client.isAllowedToRedirectTo(data.redirectUrl)) {
+            const message = `Could not complete sign up - Reason: Invalid redirect URL "${data.redirectUrl}" for Client with ID "${data.clientId}"`;
+            this.logger.warn(message);
+            throw new BadRequestException(message);
+        }
+        const createdUser = await this.usersService.create(
+            {
+                ...data,
+                emailVerified: false,
+                roles: new Set([userRole]),
+                status: AccountStatuses.PENDING_VERIFICATION,
+            },
+            data.redirectUrl
+        );
+
         this.logger.log(`User account created successfully for username "${createdUser.username}"`);
 
         return createdUser;
@@ -60,42 +73,12 @@ export class AuthenticationService {
 
     public async login(data: LoginData) {
         try {
-            const user = await this.usersService.getByUsername(data.username);
+            const user = await this.checkAccountExists(data.username);
 
-            if (!user) {
-                this.logger.warn(failedAuthenticationMessage(data.username, 'User does not exist'));
-                throw new Error();
-            }
-            if (!(await this.comparePassword(data.password, user.password))) {
-                this.logger.warn(failedAuthenticationMessage(user.username, 'Incorrect password'));
-                throw new Error();
-            }
-            if (user.status !== AccountStatuses.ACTIVE) {
-                switch (user.status) {
-                    case AccountStatuses.PENDING_VERIFICATION:
-                        this.logger.warn(failedAuthenticationMessage(user.username, 'Email address not yet verified'));
-                        break;
+            await this.increaseLoginAttempts(user);
+            await this.checkUserPassword(user, data.password);
+            this.checkAccountStatus(user);
 
-                    case AccountStatuses.BANNED:
-                        this.logger.warn(failedAuthenticationMessage(user.username, 'Account is banned'));
-                        break;
-
-                    case AccountStatuses.SUSPENDED:
-                        this.logger.warn(
-                            failedAuthenticationMessage(
-                                user.username,
-                                `Account is suspended till "${user.lockedUntil}"`
-                            )
-                        );
-                        break;
-
-                    case AccountStatuses.LOCKED:
-                        this.logger.warn(
-                            failedAuthenticationMessage(user.username, `Account is locked till "${user.lockedUntil}"`)
-                        );
-                        break;
-                }
-            }
             this.logger.log(`Login successful for username "${user.username}"`);
             await this.usersService.update({ ...user, lastLogin: new Date() });
 
@@ -117,12 +100,45 @@ export class AuthenticationService {
         return null;
     }
 
+    public async verifyEmail(token: string, redirectUrl: string) {
+        const [[code, username], error] = this.decodeVerifyEmailToken(token);
+
+        if (error) throw error;
+        const user = await this.usersService.getByUsername(username);
+
+        try {
+            if (
+                !(await compareHashToValue(code, user.emailVerificationCode)) &&
+                user?.emailVerificationCodeExpiry?.getTime() >= new Date().getTime()
+            ) {
+                throw new Error();
+            }
+            user.emailVerificationCodeExpiry = user.emailVerificationCode = null;
+            user.emailVerified = true;
+            user.status = AccountStatuses.ACTIVE;
+
+            await this.usersService.update(user);
+        } catch {
+            await this.usersService.sendVerifyEmailAddressEmail(user, redirectUrl);
+            throw new BadRequestException('Invalid Token');
+        }
+    }
+
+    public async resendVerifyEmail(token: string, redirectUrl: string) {
+        const [[_code, username], error] = this.decodeVerifyEmailToken(token);
+
+        if (error) throw error;
+        const user = await this.usersService.getByUsername(username);
+
+        await this.usersService.sendVerifyEmailAddressEmail(user, redirectUrl);
+    }
+
     public async changePassword(data: ChangePasswordData, user: User) {
         if (!(await this.comparePassword(data.oldPassword, user.password))) {
             this.logger.warn(`Change password failed for User with ID "${user.id}" - Reason: Incorrect old password`);
             throw new BadRequestException('Old password is incorrect');
         }
-        user.password = await hashPassword(data.newPassword);
+        user.password = await createHash(data.newPassword);
 
         if (user.passwordExpiry) {
             user.passwordExpiry = data.passwordExpiry ?? null;
@@ -137,11 +153,6 @@ export class AuthenticationService {
     @Cron('0 5 * * * *')
     protected async removeExpiredAuthorizationCodes() {
         await this.authorizationRepository.removeExpiredAuthorizationCodes();
-    }
-
-    private async comparePassword(password: string, hash: string) {
-        if (!hash) return false;
-        return await compare(password, hash);
     }
 
     private async generateTokensWithAuthorizationCode(authorizationCode: string, codeVerifier: string) {
@@ -223,5 +234,77 @@ export class AuthenticationService {
             tokens: await this.tokensService.generateTokens(client, sub, jti),
             clientId: client.id,
         };
+    }
+
+    private async checkAccountExists(username: string) {
+        const user = await this.usersService.getByUsername(username);
+
+        if (user) return user;
+        this.logger.warn(failedAuthenticationMessage(username, 'User does not exist'));
+        throw new Error();
+    }
+
+    private async increaseLoginAttempts(user: User) {
+        if (user.loginAttempts === MAX_LOGIN_ATTEMPTS && user.status === AccountStatuses.LOCKED) {
+            throw new TooManyException('Too many login attempts. Please try again later.');
+        }
+        user.loginAttempts++;
+        await this.usersService.update(user);
+
+        if (user.loginAttempts === MAX_LOGIN_ATTEMPTS) {
+            user.lockedUntil = new Date(Date.now() + LOGIN_LOCK_TIMEOUT);
+            user.status = AccountStatuses.LOCKED;
+            await this.usersService.update(user);
+
+            throw new TooManyException('Too many login attempts. Please try again later.');
+        }
+    }
+
+    private async checkUserPassword(user: User, password: string) {
+        if (await this.comparePassword(password, user.password)) return;
+        this.logger.warn(failedAuthenticationMessage(user.username, 'Incorrect password'));
+        throw new Error();
+    }
+
+    private async comparePassword(password: string, hash: string) {
+        if (!hash) return false;
+        return await compareHashToValue(password, hash);
+    }
+
+    private checkAccountStatus(user: User) {
+        if (user.status == AccountStatuses.ACTIVE) return;
+        switch (user.status) {
+            case AccountStatuses.PENDING_VERIFICATION:
+                this.logger.warn(failedAuthenticationMessage(user.username, 'Email address not yet verified'));
+                break;
+
+            case AccountStatuses.BANNED:
+                this.logger.warn(failedAuthenticationMessage(user.username, 'Account is banned'));
+                break;
+
+            case AccountStatuses.SUSPENDED:
+                this.logger.warn(
+                    failedAuthenticationMessage(user.username, `Account is suspended till "${user.lockedUntil}"`)
+                );
+                break;
+
+            case AccountStatuses.LOCKED:
+                this.logger.warn(
+                    failedAuthenticationMessage(user.username, `Account is locked till "${user.lockedUntil}"`)
+                );
+                break;
+        }
+        throw new Error();
+    }
+
+    private decodeVerifyEmailToken(token: string): [string[], HttpException] {
+        try {
+            const decodedToken = Buffer.from(token, 'base64url').toString('utf8');
+            decodedToken.split(':');
+
+            return [decodedToken.split(':'), null];
+        } catch {
+            return [null, new BadRequestException('Invalid Token')];
+        }
     }
 }

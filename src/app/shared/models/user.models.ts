@@ -1,9 +1,37 @@
 import { PickType } from '@nestjs/mapped-types';
 import { Exclude, Type } from 'class-transformer';
-import { IsDate, IsEnum, IsNotEmpty, IsOptional, IsString, MinLength, ValidateNested } from 'class-validator';
+import {
+    IsBoolean,
+    IsDate,
+    IsEmail,
+    IsEnum,
+    IsInt,
+    IsNotEmpty,
+    IsOptional,
+    IsString,
+    IsUrl,
+    Max,
+    Min,
+    MinLength,
+    ValidateNested,
+} from 'class-validator';
 import { AccountStatus, AccountStatuses } from './account-status.models';
 import { Role, RoleName, transformAllRoleScopes } from './role.models';
 import { ScopeName } from './scope.models';
+
+export const MAX_LOGIN_ATTEMPTS = 3;
+
+/**
+ * Timeout in ms. for when a User has attempted to log in too many times and failed.
+ * Currently set to 10 minutes.
+ */
+export const LOGIN_LOCK_TIMEOUT = 600_000;
+
+/**
+ * Expiration time in ms. for verifying an email address when a User creates a new account.
+ * Currently set to 10 minutes.
+ */
+export const EMAIL_VERIFICATION_EXPIRY = 600_000;
 
 export class User {
     @IsString()
@@ -20,25 +48,54 @@ export class User {
     @Exclude({ toPlainOnly: true })
     public password: string;
 
+    @IsDate()
+    @IsOptional()
+    @Exclude({ toPlainOnly: true })
+    public passwordExpiry?: Date;
+
+    @IsEmail({ allow_display_name: false, require_display_name: false, require_tld: true, allow_ip_domain: false })
+    @IsNotEmpty()
+    @IsString()
+    @Exclude({ toPlainOnly: true })
+    public email: string;
+
+    @IsBoolean()
+    public emailVerified: boolean;
+
+    @IsNotEmpty()
+    @IsString()
+    @IsOptional()
+    @Exclude({ toPlainOnly: true })
+    public emailVerificationCode?: string;
+
+    @IsDate()
+    @IsOptional()
+    @Exclude({ toPlainOnly: true })
+    public emailVerificationCodeExpiry?: Date;
+
+    @Max(MAX_LOGIN_ATTEMPTS)
+    @Min(0)
+    @IsInt()
+    @Exclude({ toPlainOnly: true })
+    public loginAttempts: number;
+
+    @IsDate()
+    @IsOptional()
+    @Exclude({ toPlainOnly: true })
+    public lastLogin?: Date;
+
     @IsEnum(AccountStatuses)
     @IsString()
     public status: AccountStatus;
 
+    @IsDate()
+    @IsOptional()
+    @Exclude({ toPlainOnly: true })
+    public lockedUntil?: Date;
+
     @ValidateNested()
     @Type(() => Role)
     public roles: Set<Role>;
-
-    @IsDate()
-    @IsOptional()
-    public passwordExpiry?: Date;
-
-    @IsDate()
-    @IsOptional()
-    public lastLogin?: Date;
-
-    @IsDate()
-    @IsOptional()
-    public lockedUntil?: Date;
 
     public getAllRoleScopes() {
         return [...this.roles].map((role) => role.getAllRoleScopes()).join(' ');
@@ -59,23 +116,34 @@ export class User {
 
 export class CreateUserData extends PickType(User, [
     'username',
+    'email',
+    'emailVerified',
+    'emailVerificationCode',
+    'emailVerificationCodeExpiry',
     'password',
-    'status',
-    'roles',
     'passwordExpiry',
-    'lastLogin',
-    'lockedUntil',
-] as const) {}
+    'roles',
+    'status',
+] as const) {
+    @IsUrl({ protocols: ['https'], require_protocol: true })
+    @IsNotEmpty()
+    @IsString()
+    public redirectUrl: string;
+}
 
 export class UpdateUserData extends PickType(User, [
     'id',
     'username',
-    'password',
-    'status',
-    'roles',
+    'email',
+    'emailVerified',
+    'emailVerificationCode',
+    'emailVerificationCodeExpiry',
     'passwordExpiry',
+    'loginAttempts',
     'lastLogin',
+    'status',
     'lockedUntil',
+    'roles',
 ] as const) {}
 
 export function transformAllUserRoles<T = unknown>(data: T[]) {

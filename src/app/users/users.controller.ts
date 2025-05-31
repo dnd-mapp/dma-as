@@ -39,9 +39,9 @@ export class UsersController {
 
     @HasRole(Roles.ADMIN)
     @Post()
-    public async create(@Body() userData: CreateUserData) {
+    public async create(@Body() data: CreateUserData) {
         this.logger.log('Creating a new user');
-        return await this.usersService.create(userData);
+        return await this.usersService.create(data, data.redirectUrl);
     }
 
     @HasRole(Roles.USER)
