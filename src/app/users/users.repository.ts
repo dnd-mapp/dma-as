@@ -83,6 +83,7 @@ export class UsersRepository {
                         id: data.id,
                         username: data.username,
                         email: data.email,
+                        emailVerified: data.emailVerified,
                         emailVerificationCode: data.emailVerificationCode,
                         emailVerificationCodeExpiry: data.emailVerificationCodeExpiry,
                         passwordExpiry: data.passwordExpiry,
