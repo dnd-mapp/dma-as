@@ -27,6 +27,7 @@ import {
     ScopeNames,
     SignUpData,
     TokenRequestData,
+    VerifyEmailData,
 } from '../shared';
 import { AuthenticationService } from './authentication.service';
 
@@ -107,6 +108,14 @@ export class AuthenticationController {
                 expires: tokens.refreshToken.expirationTime,
                 path: '/',
             });
+    }
+
+    @Post('/verify-email')
+    public async verifyEmail(@Body() data: VerifyEmailData, @Res({ passthrough: true }) response: FastifyReply) {
+        this.logger.log('Verify email initiated');
+        await this.authenticationService.verifyEmail(data.token, data.redirectUrl);
+
+        response.status(HttpStatus.OK);
     }
 
     @UseGuards(AuthenticationGuard, ScopeGuard)

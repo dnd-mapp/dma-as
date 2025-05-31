@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, HttpException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { Cron } from '@nestjs/schedule';
 import { ClientsService } from '../clients';
@@ -98,6 +98,30 @@ export class AuthenticationService {
             return await this.generateTokensFromRefreshTokens(refreshToken);
         }
         return null;
+    }
+
+    public async verifyEmail(token: string, redirectUrl: string) {
+        const [[code, username], error] = this.decodeVerifyEmailToken(token);
+
+        if (error) throw error;
+        const user = await this.usersService.getByUsername(username);
+
+        try {
+            if (
+                !(await compareHashToValue(code, user.emailVerificationCode)) &&
+                user?.emailVerificationCodeExpiry?.getTime() >= new Date().getTime()
+            ) {
+                throw new Error();
+            }
+            user.emailVerificationCodeExpiry = user.emailVerificationCode = null;
+            user.emailVerified = true;
+            user.status = AccountStatuses.ACTIVE;
+
+            await this.usersService.update(user);
+        } catch {
+            await this.usersService.sendVerifyEmailAddressEmail(user, redirectUrl);
+            throw new BadRequestException('Invalid Token');
+        }
     }
 
     public async changePassword(data: ChangePasswordData, user: User) {
@@ -262,5 +286,16 @@ export class AuthenticationService {
                 break;
         }
         throw new Error();
+    }
+
+    private decodeVerifyEmailToken(token: string): [string[], HttpException] {
+        try {
+            const decodedToken = Buffer.from(token, 'base64url').toString('utf8');
+            decodedToken.split(':');
+
+            return [decodedToken.split(':'), null];
+        } catch {
+            return [null, new BadRequestException('Invalid Token')];
+        }
     }
 }

@@ -114,6 +114,17 @@ export class TokenRequestData {
     public useRefreshToken?: boolean;
 }
 
+export class VerifyEmailData {
+    @IsNotEmpty()
+    @IsString()
+    public token: string;
+
+    @IsUrl({ protocols: ['https'], require_protocol: true })
+    @IsString()
+    @IsNotEmpty()
+    public redirectUrl: string;
+}
+
 export class ChangePasswordData {
     @IsString()
     @IsNotEmpty()
