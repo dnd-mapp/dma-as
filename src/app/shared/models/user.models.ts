@@ -9,6 +9,7 @@ import {
     IsNotEmpty,
     IsOptional,
     IsString,
+    IsUrl,
     Max,
     Min,
     MinLength,
@@ -123,7 +124,12 @@ export class CreateUserData extends PickType(User, [
     'passwordExpiry',
     'roles',
     'status',
-] as const) {}
+] as const) {
+    @IsUrl({ protocols: ['https'], require_protocol: true })
+    @IsNotEmpty()
+    @IsString()
+    public redirectUrl: string;
+}
 
 export class UpdateUserData extends PickType(User, [
     'id',
