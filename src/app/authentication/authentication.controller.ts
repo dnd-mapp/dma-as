@@ -118,6 +118,14 @@ export class AuthenticationController {
         response.status(HttpStatus.OK);
     }
 
+    @Post('/reset-verify-email')
+    public async resendVerifyEmail(@Body() data: VerifyEmailData, @Res({ passthrough: true }) response: FastifyReply) {
+        this.logger.log('Resend "Verify email" email initiated');
+        await this.authenticationService.resendVerifyEmail(data.token, data.redirectUrl);
+
+        response.status(HttpStatus.OK);
+    }
+
     @UseGuards(AuthenticationGuard, ScopeGuard)
     @HasScope(ScopeNames.CHANGE_PASSWORD)
     @Post('/change-password')

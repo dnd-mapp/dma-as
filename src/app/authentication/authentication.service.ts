@@ -124,6 +124,15 @@ export class AuthenticationService {
         }
     }
 
+    public async resendVerifyEmail(token: string, redirectUrl: string) {
+        const [[_code, username], error] = this.decodeVerifyEmailToken(token);
+
+        if (error) throw error;
+        const user = await this.usersService.getByUsername(username);
+
+        await this.usersService.sendVerifyEmailAddressEmail(user, redirectUrl);
+    }
+
     public async changePassword(data: ChangePasswordData, user: User) {
         if (!(await this.comparePassword(data.oldPassword, user.password))) {
             this.logger.warn(`Change password failed for User with ID "${user.id}" - Reason: Incorrect old password`);

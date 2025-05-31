@@ -29,6 +29,7 @@ export default tseslint.config({
     },
     rules: {
         '@typescript-eslint/no-floating-promises': 'off',
+        '@typescript-eslint/no-unused-vars': 'off',
         'ban/ban': [
             2,
             { name: 'fdescribe', message: 'Focussing test suites is not allowed' },
