@@ -2,8 +2,6 @@ import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/
 import { ModuleRef } from '@nestjs/core';
 import { Cron } from '@nestjs/schedule';
 import { ClientsService } from '../clients';
-import { EmailService } from '../email';
-import { EmailSubjects } from '../email/models';
 import { DmaLogger } from '../logging';
 import { RolesService } from '../roles';
 import {
@@ -40,36 +38,29 @@ export class AuthenticationService {
         private readonly usersService: UsersService,
         private readonly tokensService: TokensService,
         private readonly clientsService: ClientsService,
-        private readonly rolesService: RolesService,
-        private readonly emailService: EmailService
+        private readonly rolesService: RolesService
     ) {
         this.logger.setContext('AuthenticationService');
     }
 
-    public async signUp(signUpData: SignUpData) {
+    public async signUp(data: SignUpData) {
         const userRole = await this.rolesService.getByName(Roles.USER);
-        const client = await this.clientsService.getById(signUpData.clientId);
+        const client = await this.clientsService.getById(data.clientId);
 
-        if (!client || !client.isAllowedToRedirectTo(signUpData.redirectUrl)) {
-            const message = `Could not complete sign up - Reason: Invalid redirect URL "${signUpData.redirectUrl}" for Client with ID "${signUpData.clientId}"`;
+        if (!client || !client.isAllowedToRedirectTo(data.redirectUrl)) {
+            const message = `Could not complete sign up - Reason: Invalid redirect URL "${data.redirectUrl}" for Client with ID "${data.clientId}"`;
             this.logger.warn(message);
             throw new BadRequestException(message);
         }
-        const createdUser = await this.usersService.create({
-            ...signUpData,
-            emailVerified: false,
-            roles: new Set([userRole]),
-            status: AccountStatuses.PENDING_VERIFICATION,
-        });
-
-        await this.emailService.sendEmail({
-            to: createdUser.email,
-            subject: EmailSubjects.VERIFY_EMAIL,
-            data: {
-                homeLink: signUpData.redirectUrl,
-                verifyLink: `${signUpData.redirectUrl}/complete-registration?code=${createdUser.emailVerificationCode}`,
+        const createdUser = await this.usersService.create(
+            {
+                ...data,
+                emailVerified: false,
+                roles: new Set([userRole]),
+                status: AccountStatuses.PENDING_VERIFICATION,
             },
-        });
+            data.redirectUrl
+        );
 
         this.logger.log(`User account created successfully for username "${createdUser.username}"`);
 

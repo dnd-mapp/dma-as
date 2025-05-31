@@ -1,8 +1,9 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { randomBytes } from 'crypto';
+import { EmailService } from '../email';
 import { DmaLogger } from '../logging';
 import { RolesService } from '../roles';
-import { CreateUserData, EMAIL_VERIFICATION_EXPIRY, Role, Roles, UpdateUserData, User } from '../shared';
+import { CreateUserData, EMAIL_VERIFICATION_EXPIRY, EmailSubjects, Role, Roles, UpdateUserData, User } from '../shared';
 import { createHash } from '../utils';
 import { UsersRepository } from './users.repository';
 
@@ -11,7 +12,8 @@ export class UsersService {
     constructor(
         private readonly logger: DmaLogger,
         private readonly usersRepository: UsersRepository,
-        private readonly rolesService: RolesService
+        private readonly rolesService: RolesService,
+        private readonly emailService: EmailService
     ) {
         this.logger.setContext('UsersService');
     }
@@ -53,7 +55,7 @@ export class UsersService {
         return await this.usersRepository.updatePassword(user);
     }
 
-    public async create(data: CreateUserData) {
+    public async create(data: CreateUserData, redirectUrl: string) {
         let code: string;
 
         try {
@@ -72,11 +74,8 @@ export class UsersService {
             }
             const created = await this.usersRepository.create(data);
 
-            if (!code) return created;
-
-            // Overwrite the stored hashed verification code so that it can be injected in the email templates later on.
-            created.emailVerificationCode = code;
-            return created;
+            if (created.emailVerified) return created;
+            return this.sendVerifyEmailAddressEmail(created, redirectUrl);
         } catch (error) {
             if (error instanceof BadRequestException && error.message.includes('cannot be used')) {
                 this.logger.warn(
@@ -85,6 +84,27 @@ export class UsersService {
             }
             throw error;
         }
+    }
+
+    public async sendVerifyEmailAddressEmail(user: User, redirectUrl: string) {
+        const code = randomBytes(32).toString('hex');
+
+        user.emailVerified = false;
+        user.emailVerificationCode = await createHash(code);
+        user.emailVerificationCodeExpiry = new Date(new Date().getTime() + EMAIL_VERIFICATION_EXPIRY);
+
+        user = await this.update(user);
+
+        await this.emailService.sendEmail({
+            to: user.email,
+            subject: EmailSubjects.VERIFY_EMAIL,
+            data: {
+                homeLink: redirectUrl,
+                verifyLink: `${redirectUrl}/verify-email?token=${Buffer.from(`${user.username}:${code}`).toString('base64url')}`,
+            },
+        });
+
+        return user;
     }
 
     public async removeById(userId: string) {

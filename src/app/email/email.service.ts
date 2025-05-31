@@ -5,7 +5,7 @@ import * as juice from 'juice';
 import { createTransport, Transporter } from 'nodemailer';
 import { Options } from 'nodemailer/lib/smtp-transport';
 import { resolve } from 'path';
-import { EmailSubject, getTemplateName, SendEmailParams } from './models';
+import { EmailSubject, getTemplateName, SendEmailParams } from '../shared';
 import { TRANSPORTER_OPTIONS_NAME } from './providers';
 
 @Injectable()
