@@ -7,6 +7,10 @@
         "url": "git+https://github.com/dnd-mapp/dma-ui.git",
         "type": "git"
     },
+    "workspaces": [
+        "apps/*",
+        "libs/*"
+    ],
     "scripts": {
         "clean": "npx ts-node tools/clean.ts",
         "lint": "npx eslint",
