@@ -4,7 +4,7 @@
     "license": "AGPL-3.0-only",
     "description": "The Authentication Server for the DnD-Mapp platform",
     "repository": {
-        "url": "git+https://github.com/dnd-mapp/dma-ui.git",
+        "url": "git+https://github.com/dnd-mapp/dma-as.git",
         "type": "git"
     },
     "workspaces": [
