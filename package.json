@@ -11,6 +11,9 @@
         "apps/*",
         "libs/*"
     ],
+    "prisma": {
+        "seed": "ts-node --transpile-only prisma/seed.ts"
+    },
     "scripts": {
         "clean": "npx ts-node tools/clean.ts",
         "lint": "npx eslint",
