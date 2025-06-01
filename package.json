@@ -9,18 +9,15 @@
     },
     "scripts": {
         "clean": "npx ts-node tools/clean.ts",
-        "auth:build": "npx nest build auth",
-        "auth:build-dev": "npx nest build -w auth",
-        "docker-build": "docker build -f .docker/Dockerfile -t dnd-mapp/dma-as .",
-        "auth:start": "npx nest start -w auth",
-        "test": "npx jest",
-        "test-dev": "npx jest --watch",
         "lint": "npx eslint",
         "format:check": "npx prettier -l **/*",
-        "format:write": "npx prettier -w **/*"
-    },
-    "prisma": {
-        "seed": "ts-node --transpile-only prisma/seed.ts"
+        "format:write": "npx prettier -w **/*",
+        "auth:start": "npx nest start -w auth",
+        "auth:build": "npx nest build auth",
+        "auth:build-dev": "npx nest build -w auth",
+        "auth:docker-build": "docker build -f apps/auth/.docker/Dockerfile -t dnd-mapp/dma-as-auth .",
+        "auth:test": "npx jest -c apps/auth/jest.config.ts",
+        "auth:test-dev": "npx jest -c apps/auth/jest.config.ts --watch"
     },
     "dependencies": {
         "@fastify/cookie": "~11.0.0",
