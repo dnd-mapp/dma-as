@@ -1,5 +1,4 @@
 {
-    "references": [{ "path": "./tsconfig.app.json" }, { "path": "./tsconfig.spec.json" }],
     "exclude": ["node_modules", "dist"],
     "compileOnSave": false,
     "compilerOptions": {
@@ -18,7 +17,7 @@
         "noUncheckedIndexedAccess": true,
         "noUnusedLocals": true,
         "noUnusedParameters": true,
-        "outDir": "dist/dma-as",
+        "outDir": "dist/out-tsc",
         "skipDefaultLibCheck": true,
         "skipLibCheck": true,
         "strictBindCallApply": true,
