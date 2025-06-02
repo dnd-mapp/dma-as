@@ -15,18 +15,13 @@
         "seed": "ts-node --transpile-only prisma/seed.ts"
     },
     "scripts": {
+        "nx": "npx nx",
         "clean": "npx ts-node tools/clean.ts",
         "build": "npx nx run-many -t build",
         "test": "npx nx run-many -t test",
         "lint": "npx nx run-many -t lint",
         "format:check": "npx prettier -l **/*",
-        "format:write": "npx prettier -w **/*",
-        "auth:start": "npx nest start -w auth",
-        "auth:build": "npx nest build auth",
-        "auth:build-dev": "npx nest build -w auth",
-        "auth:docker-build": "docker build -f apps/auth/.docker/Dockerfile -t dnd-mapp/dma-as-auth .",
-        "auth:test": "npx jest -c apps/auth/jest.config.ts",
-        "auth:test-dev": "npx jest -c apps/auth/jest.config.ts --watch"
+        "format:write": "npx prettier -w **/*"
     },
     "dependencies": {
         "@fastify/cookie": "~11.0.0",
@@ -55,19 +50,21 @@
         "@nestjs/schematics": "~11.0.0",
         "@nestjs/testing": "~11.0.0",
         "@nx/eslint": "~21.1.0",
+        "@nx/eslint-plugin": "~21.1.0",
         "@nx/jest": "~21.1.0",
+        "@nx/js": "~21.1.0",
+        "@nx/nest": "~21.1.0",
+        "@nx/webpack": "~21.1.0",
         "@types/bcryptjs": "~3.0.0",
         "@types/jest": "~29.5.0",
         "@types/node": "~22.14.0",
         "@types/node-jose": "~1.1.0",
         "@types/nodemailer": "~6.4.0",
         "@types/webpack": "~5.28.0",
-        "copy-webpack-plugin": "~13.0.0",
         "eslint": "~9.25.0",
         "eslint-config-prettier": "~10.1.0",
         "eslint-plugin-ban": "~2.0.0",
         "eslint-plugin-prettier": "~5.2.0",
-        "generate-package-json-webpack-plugin": "~2.6.0",
         "globals": "~16.0.0",
         "jest": "~29.7.0",
         "node-jose": "~2.2.0",
@@ -80,7 +77,6 @@
         "ts-node": "~10.9.0",
         "tsconfig-paths": "~4.2.0",
         "typescript": "~5.8.0",
-        "typescript-eslint": "~8.31.0",
-        "webpack-node-externals": "~3.0.0"
+        "typescript-eslint": "~8.31.0"
     }
 }
