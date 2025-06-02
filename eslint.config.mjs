@@ -1,39 +1,33 @@
-import eslint from '@eslint/js';
-import pluginBan from 'eslint-plugin-ban';
-import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
-import globals from 'globals';
-import tseslint from 'typescript-eslint';
+import nx from '@nx/eslint-plugin';
 
-export default tseslint.config({
-    files: ['**/*.ts'],
-    ignores: ['eslint.config.mjs'],
-    plugins: {
-        ban: pluginBan,
+export default [
+    ...nx.configs['flat/base'],
+    ...nx.configs['flat/typescript'],
+    ...nx.configs['flat/javascript'],
+    {
+        ignores: ['**/dist'],
     },
-    extends: [
-        eslint.configs.recommended,
-        ...tseslint.configs.recommended,
-        ...tseslint.configs.stylistic,
-        eslintPluginPrettierRecommended,
-    ],
-    languageOptions: {
-        globals: {
-            ...globals.node,
-            ...globals.jest,
+    {
+        files: ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx'],
+        rules: {
+            '@nx/enforce-module-boundaries': [
+                'error',
+                {
+                    enforceBuildableLibDependency: true,
+                    allow: ['^.*/eslint(\\.base)?\\.config\\.[cm]?js$'],
+                    depConstraints: [
+                        {
+                            sourceTag: '*',
+                            onlyDependOnLibsWithTags: ['*'],
+                        },
+                    ],
+                },
+            ],
         },
-        sourceType: 'commonjs',
-        parserOptions: {
-            projectService: true,
-            tsconfigRootDir: import.meta.dirname,
-        },
     },
-    rules: {
-        '@typescript-eslint/no-floating-promises': 'off',
-        '@typescript-eslint/no-unused-vars': 'off',
-        'ban/ban': [
-            2,
-            { name: 'fdescribe', message: 'Focussing test suites is not allowed' },
-            { name: 'fit', message: 'Focussing a single unit test is not allowed' },
-        ],
+    {
+        files: ['**/*.ts', '**/*.tsx', '**/*.cts', '**/*.mts', '**/*.js', '**/*.jsx', '**/*.cjs', '**/*.mjs'],
+        // Override or add rules here
+        rules: {},
     },
-});
+];

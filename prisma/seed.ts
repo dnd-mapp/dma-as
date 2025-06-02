@@ -1,10 +1,15 @@
+import {
+    AccountStatuses,
+    AppModule,
+    ClientsService,
+    Roles,
+    RolesService,
+    ScopeNames,
+    ScopesService,
+    UsersService,
+} from '@dnd-mapp/dma-as/auth';
 import { INestApplication } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import { AppModule, ClientsService, UsersService } from '../src';
-import { RolesService } from '../src/app/roles';
-import { ScopesService } from '../src/app/scopes';
-import { Roles, ScopeNames } from '../src/app/shared';
-import { AccountStatuses } from '../src/app/shared/models/account-status.models';
 
 let app: INestApplication<unknown>;
 
@@ -60,13 +65,18 @@ async function generateDefaultUsers() {
     const adminRole = await rolesService.getByName(Roles.ADMIN);
     const superAdminRole = await rolesService.getByName(Roles.SUPER_ADMIN);
 
-    await usersService.create({
-        username: 'Admin',
-        password: 'changemenow',
-        roles: new Set([userRole, adminRole, superAdminRole]),
-        passwordExpiry: new Date(),
-        status: AccountStatuses.ACTIVE,
-    });
+    await usersService.create(
+        {
+            username: 'Admin',
+            password: 'changemenow',
+            roles: new Set([userRole, adminRole, superAdminRole]),
+            passwordExpiry: new Date(),
+            status: AccountStatuses.ACTIVE,
+            emailVerified: false,
+            email: null,
+        },
+        null
+    );
 }
 
 async function generateDefaultClient() {

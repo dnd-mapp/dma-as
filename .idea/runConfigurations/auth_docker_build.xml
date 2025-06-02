@@ -1,14 +1,13 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="build" type="js.build_tools.npm" nameIsGenerated="true">
+  <configuration default="false" name="auth:docker-build" type="js.build_tools.npm">
     <package-json value="$PROJECT_DIR$/package.json" />
     <command value="run" />
     <scripts>
-      <script value="build" />
+      <script value="nx" />
     </scripts>
+    <arguments value="docker-build @dnd-mapp/dma-as-auth" />
     <node-interpreter value="project" />
-    <envs>
-      <env name="NODE_ENV" value="production" />
-    </envs>
+    <envs />
     <method v="2" />
   </configuration>
 </component>

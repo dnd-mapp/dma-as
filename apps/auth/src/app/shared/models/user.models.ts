@@ -128,7 +128,7 @@ export class CreateUserData extends PickType(User, [
     @IsUrl({ protocols: ['https'], require_protocol: true })
     @IsNotEmpty()
     @IsString()
-    public redirectUrl: string;
+    public redirectUrl?: string;
 }
 
 export class UpdateUserData extends PickType(User, [

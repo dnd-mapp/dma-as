@@ -17,6 +17,7 @@
 # compiled output
 dist/
 node_modules/
+.nx/
 
 # OS
 .DS_Store

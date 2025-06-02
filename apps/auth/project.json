@@ -1,0 +1,85 @@
+{
+    "$schema": "../../node_modules/nx/schemas/project-schema.json",
+    "name": "@dnd-mapp/dma-as-auth",
+    "projectType": "application",
+    "root": "apps/auth",
+    "sourceRoot": "apps/auth/src",
+    "tags": [],
+    "targets": {
+        "prisma-generate-client": {
+            "executor": "nx:run-commands",
+            "inputs": ["{workspaceRoot}/prisma/**"],
+            "outputs": ["{workspaceRoot}/node_modules/.prisma/client/package.json"],
+            "cache": true,
+            "options": {
+                "command": "npx prisma generate client"
+            }
+        },
+        "build": {
+            "executor": "@nx/webpack:webpack",
+            "outputs": ["{options.outputPath}"],
+            "dependsOn": ["prisma-generate-client"],
+            "cache": true,
+            "options": {
+                "assets": ["apps/auth/src/assets"],
+                "commonChunk": true,
+                "compiler": "tsc",
+                "main": "apps/auth/src/main.ts",
+                "outputHashing": "none",
+                "outputPath": "dist/apps/auth",
+                "target": "node",
+                "tsConfig": "apps/auth/tsconfig.app.json",
+                "webpackConfig": "apps/auth/webpack.config.js"
+            },
+            "defaultConfiguration": "prod",
+            "configurations": {
+                "prod": {
+                    "extractLicenses": true,
+                    "generatePackageJson": true,
+                    "optimization": true
+                },
+                "dev": {
+                    "runtimeChunk": true,
+                    "vendorChunk": true,
+                    "watch": true
+                }
+            }
+        },
+        "docker-build": {
+            "executor": "nx:run-commands",
+            "inputs": ["{projectRoot}/.docker/Dockerfile"],
+            "options": {
+                "command": "docker build -f apps/auth/.docker/Dockerfile -t dnd-mapp/dma-as-auth ."
+            }
+        },
+        "serve": {
+            "executor": "@nx/js:node",
+            "options": {
+                "inspect": false,
+                "buildTarget": "@dnd-mapp/dma-as-auth:build",
+                "buildTargetOptions": {
+                    "outputPath": "dist/apps/auth",
+                    "outputFileName": "main.js"
+                }
+            }
+        },
+        "test": {
+            "executor": "@nx/jest:jest",
+            "outputs": ["{workspaceRoot}/reports/{projectRoot}"],
+            "cache": true,
+            "options": {
+                "jestConfig": "apps/auth/jest.config.ts",
+                "passWithNoTests": true
+            },
+            "defaultConfiguration": "ci",
+            "configurations": {
+                "ci": {
+                    "ci": true
+                },
+                "dev": {
+                    "watch": true
+                }
+            }
+        }
+    }
+}

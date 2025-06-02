@@ -1,6 +1,0 @@
-{
-    "extends": "./tsconfig.json",
-    "files": ["jest.config.ts"],
-    "include": ["**/*.spec.ts"],
-    "compilerOptions": {}
-}

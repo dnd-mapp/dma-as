@@ -1,3 +1,4 @@
+export * from './account-status.models';
 export * from './authentication.models';
 export * from './client.models';
 export * from './email.models';
