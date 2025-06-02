@@ -1,5 +1,6 @@
+import '@fastify/cookie';
 import 'fastify';
-import { ScopeName, User } from './shared';
+import { ScopeName, User } from './src/app/shared';
 
 declare module 'fastify' {
     interface FastifyRequest {
