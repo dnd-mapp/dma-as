@@ -1,15 +1,12 @@
 import type { Config } from 'jest';
-import baseJestConfig from '../../jest.config';
 
-const jestConfig: Config = {
-    ...baseJestConfig,
+export default {
     coverageDirectory: '<rootDir>/../../reports/auth',
-    displayName: 'Auth',
+    displayName: '@dnd-mapp/dma-as-auth',
     globalSetup: '<rootDir>/test/global-setup.ts',
     globalTeardown: '<rootDir>/test/global-teardown.ts',
+    preset: '../../jest.preset.js',
     rootDir: '.',
     setupFilesAfterEnv: ['<rootDir>/test/test-setup.ts'],
     testMatch: ['<rootDir>/src/**/*.spec.ts'],
-};
-
-export default jestConfig;
+} satisfies Config;

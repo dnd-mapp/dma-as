@@ -1,8 +1,9 @@
 {
     "extends": "../../tsconfig.json",
-    "files": ["vitest.config.ts"],
-    "include": ["src/**/*.spec.ts"],
+    "files": ["jest.config.ts"],
+    "include": ["test/**/*.ts", "**/*.d.ts", "**/*.spec.ts"],
     "compilerOptions": {
+        "module": "CommonJS",
         "types": ["node", "jest"]
     }
 }
