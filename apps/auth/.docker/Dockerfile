@@ -8,15 +8,19 @@ RUN npm ci
 
 COPY . .
 
-RUN npm run auth:build
-
 ENV NODE_ENV=production
 
-RUN rm -rf node_modules && \
-    mv prisma dist/dma-as/prisma/ && \
+RUN npx nx build auth && \
+    # Temporarily move the generated Prisma client outside of the node_modules
+    mkdir tmp && \
+    cp -r node_modules/.prisma tmp/prisma && \
+    # Remove node_modules to prevent caching issues
+    rm -rf node_modules && \
     cd dist/apps/auth && \
-    npm i && \
-    npx prisma generate
+    # Install production only dependencies
+    npm ci && \
+    # Add back the previously generated Prisma client into the output bundle
+    cp -r /app/tmp/prisma node_modules/.prisma
 
 
 FROM node:22.14-alpine3.21
