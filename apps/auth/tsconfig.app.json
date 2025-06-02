@@ -1,11 +1,11 @@
 {
-    "extends": "tsconfig.json",
-    "files": ["src/main.ts"],
+    "extends": "./tsconfig.json",
+    "files": ["./src/main.ts"],
     "include": ["**/*.ts"],
-    "exclude": ["**/*.spec.ts", "jest.config.ts"],
+    "exclude": ["**/*.spec.ts", "./jest.config.ts"],
     "compilerOptions": {
-        "module": "CommonJS",
-        "declaration": false,
-        "outDir": "../../dist/apps/auth"
+        "outDir": "../../dist/apps/auth",
+        "target": "ES2024",
+        "types": ["node"]
     }
 }
