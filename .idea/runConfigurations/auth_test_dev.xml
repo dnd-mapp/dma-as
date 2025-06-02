@@ -3,8 +3,9 @@
     <package-json value="$PROJECT_DIR$/package.json" />
     <command value="run" />
     <scripts>
-      <script value="auth:test-dev" />
+      <script value="nx" />
     </scripts>
+    <arguments value="test @dnd-mapp/dma-as-auth -- -c dev" />
     <node-interpreter value="project" />
     <envs />
     <method v="2" />
