@@ -1,32 +1,6 @@
 {
-    "exclude": ["node_modules", "dist"],
-    "compileOnSave": false,
-    "compilerOptions": {
-        "baseUrl": "./",
-        "emitDecoratorMetadata": true,
-        "experimentalDecorators": true,
-        "forceConsistentCasingInFileNames": true,
-        "importHelpers": true,
-        "module": "CommonJS",
-        "moduleResolution": "node",
-        "noFallthroughCasesInSwitch": true,
-        "noImplicitAny": true,
-        "noImplicitOverride": true,
-        "noImplicitReturns": true,
-        "noImplicitThis": true,
-        "noUncheckedIndexedAccess": true,
-        "noUnusedLocals": true,
-        "noUnusedParameters": true,
-        "outDir": "dist/out-tsc",
-        "skipDefaultLibCheck": true,
-        "skipLibCheck": true,
-        "strictBindCallApply": true,
-        "strictBuiltinIteratorReturn": true,
-        "strictFunctionTypes": true,
-        "target": "ES2023",
-        "useUnknownInCatchVariables": true,
-        "paths": {
-            "@dnd-mapp/dma-as/auth": ["apps/auth/src/public_api.ts"]
-        }
-    }
+    "extends": "./tsconfig.base.json",
+    "files": [],
+    "references": [{ "path": "apps/auth" }],
+    "compileOnSave": false
 }
