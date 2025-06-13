@@ -1,9 +1,9 @@
 import { BeforeApplicationShutdown, Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { readFile, stat } from 'fs/promises';
-import * as juice from 'juice';
+import juice from 'juice';
 import { createTransport, Transporter } from 'nodemailer';
-import { Options } from 'nodemailer/lib/smtp-transport';
+import type { Options } from 'nodemailer/lib/smtp-transport';
 import { resolve } from 'path';
 import { EmailSubject, getTemplateName, SendEmailParams } from '../shared';
 import { TRANSPORTER_OPTIONS_NAME } from './providers';

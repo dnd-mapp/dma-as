@@ -1,6 +1,6 @@
 import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
-import { FastifyRequest } from 'fastify';
+import type { FastifyRequest } from 'fastify';
 import { DmaLogger } from '../../logging';
 import { validateCookie } from '../functions';
 import { CLIENT_ID_HEADER, COOKIE_NAME_ACCESS_TOKEN, TokenTypes } from '../models';

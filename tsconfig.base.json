@@ -1,6 +1,5 @@
 {
     "compilerOptions": {
-        "baseUrl": "./",
         "composite": true,
         "customConditions": ["development"],
         "declarationMap": true,
@@ -8,7 +7,7 @@
         "forceConsistentCasingInFileNames": true,
         "importHelpers": true,
         "isolatedModules": true,
-        "lib": ["ES2024"],
+        "lib": ["ES2022"],
         "module": "NodeNext",
         "moduleResolution": "nodenext",
         "noEmitOnError": true,
@@ -20,9 +19,6 @@
         "noUncheckedIndexedAccess": true,
         "noUnusedLocals": true,
         "noUnusedParameters": true,
-        "paths": {
-            "@dnd-mapp/dma-as/auth": ["apps/auth/src/public_api.ts"]
-        },
         "skipDefaultLibCheck": true,
         "skipLibCheck": true,
         "strictBindCallApply": true,
