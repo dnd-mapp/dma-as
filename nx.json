@@ -14,21 +14,36 @@
         "sharedGlobals": ["{workspaceRoot}/.github/workflows/build.yml}"]
     },
     "targetDefaults": {
-        "build": {
-            "dependsOn": ["^build"],
-            "outputs": ["{workspaceRoot}/dist/{projectRoot}"],
-            "cache": true,
-            "inputs": [
-                "{projectRoot}/src/**/*.ts",
-                "{projectRoot}/tsconfig.app.json",
-                "{projectRoot}/webpack.config.js"
-            ]
-        },
         "test": {
             "dependsOn": ["^build"]
         }
     },
     "plugins": [
+        {
+            "plugin": "@nx/js/typescript",
+            "options": {
+                "build": {
+                    "targetName": "build",
+                    "configName": "tsconfig.lib.json",
+                    "buildDepsName": "build-deps",
+                    "watchDepsName": "watch-deps"
+                },
+                "typecheck": {
+                    "targetName": "typecheck"
+                }
+            },
+            "exclude": ["libs/back-end-shared/*", "libs/api-shared/*"]
+        },
+        {
+            "plugin": "@nx/webpack/plugin",
+            "options": {
+                "buildTargetName": "build",
+                "serveTargetName": "serve",
+                "previewTargetName": "preview",
+                "buildDepsTargetName": "build-deps",
+                "watchDepsTargetName": "watch-deps"
+            }
+        },
         {
             "plugin": "@nx/eslint/plugin",
             "options": {
@@ -37,8 +52,18 @@
         },
         {
             "plugin": "@nx/jest/plugin",
+            "exclude": [],
             "options": {
                 "targetName": "test"
+            }
+        },
+        {
+            "plugin": "@nx/js/typescript",
+            "include": ["libs/back-end-shared/*", "libs/api-shared/*"],
+            "options": {
+                "typecheck": {
+                    "targetName": "typecheck"
+                }
             }
         }
     ]

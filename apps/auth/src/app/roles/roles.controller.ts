@@ -15,7 +15,7 @@ import {
     UseGuards,
     UseInterceptors,
 } from '@nestjs/common';
-import { FastifyReply, FastifyRequest } from 'fastify';
+import type { FastifyReply, FastifyRequest } from 'fastify';
 import { AuthenticationGuard, CreateRoleData, HasRole, Role, Roles } from '../shared';
 import { RolesService } from './roles.service';
 

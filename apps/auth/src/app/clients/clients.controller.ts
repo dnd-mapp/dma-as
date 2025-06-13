@@ -12,7 +12,7 @@ import {
     Res,
     UseGuards,
 } from '@nestjs/common';
-import { FastifyReply, FastifyRequest } from 'fastify';
+import type { FastifyReply, FastifyRequest } from 'fastify';
 import {
     AuthenticationGuard,
     Client,

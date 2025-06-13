@@ -18,6 +18,7 @@
 dist/
 node_modules/
 .nx/
+**/prisma/client/
 
 # OS
 .DS_Store
@@ -31,3 +32,5 @@ reports/
 
 .docker/mariadb/
 .docker/dbeaver-workspace/
+
+test-output

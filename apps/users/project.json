@@ -1,0 +1,88 @@
+{
+    "$schema": "../../node_modules/nx/schemas/project-schema.json",
+    "name": "@dnd-mapp/dma-users",
+    "sourceRoot": "apps/users/src",
+    "projectType": "application",
+    "tags": ["api:internal", "framework:nest"],
+    "targets": {
+        "prisma-generate-client": {
+            "executor": "nx:run-commands",
+            "inputs": ["{projectRoot}/prisma/schema.prisma"],
+            "outputs": ["{projectRoot}/prisma/client"],
+            "cache": true,
+            "options": {
+                "command": "prisma generate client",
+                "args": ["--config apps/users/prisma.config.ts"]
+            }
+        },
+        "build": {
+            "executor": "nx:run-commands",
+            "dependsOn": ["prisma-generate-client"],
+            "cache": true,
+            "inputs": [
+                "{projectRoot}/**/*",
+                "!{projectRoot}/tsconfig.spec.json",
+                "!{projectRoot}/jest.config.ts",
+                "!{projectRoot}/**/*.spec.ts",
+                "!{projectRoot}/.spec.swcrc",
+                "!{projectRoot}/dist/**/*",
+                "!{projectRoot}/test/**/*",
+                "!{projectRoot}/reports/**/*"
+            ],
+            "outputs": ["{projectRoot}/dist"],
+            "options": {
+                "command": "webpack-cli build"
+            },
+            "defaultConfiguration": "prod",
+            "configurations": {
+                "prod": {
+                    "args": ["--node-env production"]
+                },
+                "dev": {
+                    "args": ["--node-env development"]
+                }
+            }
+        },
+        "serve": {
+            "executor": "@nx/js:node",
+            "dependsOn": ["build"],
+            "continuous": true,
+            "options": {
+                "inspect": false,
+                "runBuildTargetDependencies": false
+            },
+            "defaultConfiguration": "dev",
+            "configurations": {
+                "prod": {
+                    "buildTarget": "@dnd-mapp/dma-users:build:prod"
+                },
+                "dev": {
+                    "buildTarget": "@dnd-mapp/dma-users:build:dev"
+                }
+            }
+        },
+        "test": {
+            "executor": "@nx/jest:jest",
+            "options": {
+                "jestConfig": "apps/users/jest.config.ts",
+                "passWithNoTests": true
+            },
+            "defaultConfiguration": "ci",
+            "configurations": {
+                "ci": {
+                    "ci": true
+                },
+                "dev": {
+                    "ci": false,
+                    "watch": true
+                }
+            }
+        },
+        "lint": {
+            "executor": "@nx/eslint:lint",
+            "options": {
+                "eslintConfig": "apps/users/eslint.config.mjs"
+            }
+        }
+    }
+}

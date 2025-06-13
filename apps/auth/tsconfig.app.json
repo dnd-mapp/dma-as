@@ -1,11 +1,14 @@
 {
-    "extends": "./tsconfig.json",
-    "files": ["./src/main.ts"],
-    "include": ["**/*.ts"],
-    "exclude": ["**/*.spec.ts", "./jest.config.ts"],
+    "extends": "../../tsconfig.base.json",
+    "include": ["src/**/*.ts"],
+    "exclude": ["out-tsc", "dist", "jest.config.ts", "src/**/*.spec.ts", "eslint.config.mjs"],
     "compilerOptions": {
-        "outDir": "../../dist/apps/auth",
+        "emitDecoratorMetadata": true,
+        "experimentalDecorators": true,
+        "outDir": "dist",
+        "rootDir": "src",
         "target": "ES2024",
+        "tsBuildInfoFile": "dist/tsconfig.app.tsbuildinfo",
         "types": ["node"]
     }
 }

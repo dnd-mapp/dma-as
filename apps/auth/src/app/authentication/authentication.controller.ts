@@ -10,7 +10,7 @@ import {
     UseInterceptors,
 } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
-import { FastifyReply, FastifyRequest } from 'fastify';
+import type { FastifyReply, FastifyRequest } from 'fastify';
 import { authenticationThrottlerOptions } from '../config';
 import { DmaLogger } from '../logging';
 import {

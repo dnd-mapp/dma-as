@@ -1,6 +1,6 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { FastifyRequest } from 'fastify';
+import type { FastifyRequest } from 'fastify';
 import { HasScope } from '../decorators';
 
 @Injectable()

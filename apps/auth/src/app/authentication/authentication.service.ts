@@ -5,6 +5,7 @@ import { ClientsService } from '../clients';
 import { DmaLogger } from '../logging';
 import { RolesService } from '../roles';
 import {
+    AccountStatuses,
     AuthorizeRequest,
     ChangePasswordData,
     decodeToken,
@@ -19,7 +20,6 @@ import {
     TooManyException,
     User,
 } from '../shared';
-import { AccountStatuses } from '../shared/models/account-status.models';
 import { TokensService } from '../tokens';
 import { UsersService } from '../users';
 import { compareHashToValue, createHash, valueToBase64, valueToSHA256 } from '../utils';
