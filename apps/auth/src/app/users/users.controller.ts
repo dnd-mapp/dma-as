@@ -14,7 +14,7 @@ import {
     UseGuards,
     UseInterceptors,
 } from '@nestjs/common';
-import { FastifyRequest } from 'fastify';
+import type { FastifyRequest } from 'fastify';
 import { DmaLogger } from '../logging';
 import { AuthenticationGuard, CreateUserData, HasRole, RoleGuard, Roles, UpdateUserData, User } from '../shared';
 import { UsersService } from './users.service';

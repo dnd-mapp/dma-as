@@ -15,7 +15,8 @@ import {
     MinLength,
     ValidateNested,
 } from 'class-validator';
-import { AccountStatus, AccountStatuses } from './account-status.models';
+import type { AccountStatus } from './account-status.models';
+import { AccountStatuses } from './account-status.models';
 import { Role, RoleName, transformAllRoleScopes } from './role.models';
 import { ScopeName } from './scope.models';
 

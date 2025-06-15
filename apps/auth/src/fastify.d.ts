@@ -1,6 +1,6 @@
+import { ScopeName, User } from '@dnd-mapp/dma-auth';
 import '@fastify/cookie';
 import 'fastify';
-import { ScopeName, User } from './src/app/shared';
 
 declare module 'fastify' {
     interface FastifyRequest {

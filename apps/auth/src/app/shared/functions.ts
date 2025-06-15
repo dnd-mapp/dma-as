@@ -1,7 +1,7 @@
 import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
-import { FastifyRequest } from 'fastify';
+import type { FastifyRequest } from 'fastify';
 import { KeysService } from '../keys';
 import { DmaLogger } from '../logging';
 import { TokensService } from '../tokens';
