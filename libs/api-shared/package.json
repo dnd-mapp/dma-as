@@ -10,6 +10,7 @@
             "import": "./src/public_api.ts",
             "default": "./src/public_api.ts"
         },
-        "./package.json": "./package.json"
+        "./package.json": "./package.json",
+        "./asssets/*": "./src/assets/*"
     }
 }

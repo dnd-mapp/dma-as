@@ -7,7 +7,13 @@ module.exports = {
     },
     plugins: [
         new NxAppWebpackPlugin({
-            assets: ['./src/assets'],
+            assets: [
+                {
+                    input: '../../libs/api-shared/src/assets',
+                    glob: '*.proto',
+                    output: 'assets',
+                },
+            ],
             compiler: 'tsc',
             generatePackageJson: true,
             main: './src/main.ts',

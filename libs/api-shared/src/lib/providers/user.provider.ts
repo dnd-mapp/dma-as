@@ -17,6 +17,6 @@ export const withUserPackage = () =>
         transport: Transport.GRPC,
         options: {
             package: USER_PACKAGE_NAME,
-            protoPath: join('apps/users/dist/', USER_SERVICE_DEFINITION_PATH),
+            protoPath: join('dist', USER_SERVICE_DEFINITION_PATH),
         },
     }) satisfies ClientProviderOptions;
