@@ -24,6 +24,7 @@
     "plugins": [
         {
             "plugin": "@nx/js/typescript",
+            "exclude": ["libs/api-shared/*"],
             "options": {
                 "build": {
                     "targetName": "build",
@@ -34,8 +35,7 @@
                 "typecheck": {
                     "targetName": "typecheck"
                 }
-            },
-            "exclude": ["libs/back-end-shared/*", "libs/api-shared/*"]
+            }
         },
         {
             "plugin": "@nx/webpack/plugin",
@@ -62,7 +62,7 @@
         },
         {
             "plugin": "@nx/js/typescript",
-            "include": ["libs/back-end-shared/*", "libs/api-shared/*"],
+            "include": ["libs/api-shared/*"],
             "options": {
                 "typecheck": {
                     "targetName": "typecheck"
